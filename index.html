@@ -51,8 +51,6 @@
         .card { background:#fff; border:1px solid #e5e7eb; border-radius:12px; transition:all 0.2s ease; }
         .card-hover:hover { border-color:#d1d5db; box-shadow:0 4px 12px rgba(0,0,0,0.04); transform:translateY(-1px); }
         .card:active { transform:scale(0.99); }
-        
-        /* REVISI 3: UX Editor Notulen Disempurnakan */
         .editor-wrapper { background:#fff; border:1.5px solid #e5e7eb; border-radius:14px; overflow:hidden; transition:border-color 0.2s, box-shadow 0.2s; }
         .editor-wrapper:focus-within { border-color:#2563eb; box-shadow:0 0 0 4px rgba(37,99,235,0.08); }
         .note-toolbar { background:#f9fafb; border-bottom:1px solid #e5e7eb; padding:6px 8px; display:flex; flex-wrap:wrap; gap:4px; align-items:center; }
@@ -74,7 +72,6 @@
         .font-size-select { padding:4px 6px; border:1px solid #d1d5db; border-radius:6px; font-size:12px; color:#4b5563; cursor:pointer; background:#fff; height:28px; }
         .font-size-select:hover { background:#f3f4f6; }
         .color-input { width:26px; height:26px; padding:0; border:1.5px solid #d1d5db; border-radius:6px; cursor:pointer; }
-        
         ::-webkit-scrollbar { width:4px; } ::-webkit-scrollbar-track { background:transparent; } ::-webkit-scrollbar-thumb { background:#cbd5e1; border-radius:2px; }
         :focus-visible { outline:2px solid #2563eb; outline-offset:2px; }
         .safe-b { padding-bottom:max(16px, env(safe-area-inset-bottom)); }
@@ -98,8 +95,6 @@
         .badge-blue { background:#eff6ff; color:#2563eb; }
         .badge-green { background:#ecfdf5; color:#059669; }
         .badge-gray { background:#f3f4f6; color:#6b7280; }
-        .badge-amber { background:#fffbeb; color:#d97706; }
-        .badge-purple { background:#f5f3ff; color:#7c3aed; }
         .line-clamp-2 { display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
         .empty-state { text-align:center; padding:40px 20px; }
         .empty-state svg { width:48px; height:48px; color:#d1d5db; margin:0 auto 12px; }
@@ -209,7 +204,6 @@
                             <div id="settingsAvatar" class="w-14 h-14 mx-auto rounded-full bg-brand/10 text-brand flex items-center justify-center text-lg font-bold mb-2"></div>
                             <p id="settingsUserName" class="font-semibold text-gray-900 text-sm"></p>
                             <p id="settingsUserEmail" class="text-[11px] text-muted truncate"></p>
-                            <!-- REVISI 4: Indikator Master -->
                             <div id="masterBadge" class="hidden mt-2 inline-flex items-center gap-1 px-2 py-0.5 bg-purple-100 text-purple-700 text-[10px] font-bold rounded-full"><svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>MASTER</div>
                         </div>
                         <div class="space-y-1">
@@ -247,7 +241,6 @@
                                 <button onclick="changePassword()" id="changePassBtn" class="btn btn-primary btn-sm w-fit"><span id="changePassBtnText">Ubah</span><div id="changePassSpinner" class="spinner hidden" style="width:14px;height:14px;border-width:2px;border-top-color:#fff;border-color:rgba(255,255,255,0.3)"></div></button>
                             </div>
                         </div>
-                        <!-- REVISI 4: Aktivasi Master -->
                         <div class="card p-5 mb-4 border-purple-200 bg-purple-50/30">
                             <h3 class="text-sm font-semibold text-purple-800 mb-2">Aktivasi Akun Master</h3>
                             <p class="text-xs text-muted mb-3">Masukkan kode rahasia untuk mendapatkan akses penuh pengelolaan rapat.</p>
@@ -339,7 +332,7 @@
         </div>
     </div>
 
-    <!-- ============ EDIT ROOM MODAL (REVISI 1) ============ -->
+    <!-- ============ EDIT ROOM MODAL ============ -->
     <div id="editRoomModal" class="hidden fixed inset-0 z-[100] items-center justify-center p-4">
         <div class="modal-overlay absolute inset-0" onclick="hideEditRoomModal()"></div>
         <div class="relative bg-white rounded-2xl shadow-modal w-full max-w-sm p-6 scale-in">
@@ -379,7 +372,6 @@
                 <div class="lg:col-span-3">
                     <div id="notulenMode" class="hidden">
                         <div class="editor-wrapper">
-                            <!-- REVISI 3: Toolbar Rich Text Lengkap & Rapi -->
                             <div class="note-toolbar">
                                 <select id="fontSizeSelect" onchange="applyFontSize(this.value)" class="font-size-select" title="Ukuran Font">
                                     <option value="">Ukuran</option>
@@ -585,11 +577,26 @@
             setLoad('regBtnText','regSpinner',false);
         }
         async function handleLogout(){if(currentRoomId)await cleanup();if(unsubRoom)unsubRoom();await auth.signOut();toast('Berhasil keluar','info');}
+        
+        // FIX: Auto-create document if missing (prevents "No document to update" error)
         auth.onAuthStateChanged(async(user)=>{
             if(user){
                 currentUser=user;
                 const doc=await db.collection('users').doc(user.uid).get();
-                window.userData=doc.exists?doc.data():{name:user.displayName||user.email.split('@')[0],email:user.email,nidn:'',jabatan:'',fakultas:'',prodi:'',isMaster:false};
+                if(doc.exists){
+                    window.userData=doc.data();
+                } else {
+                    // Create missing document for Google users
+                    const defaultData = {
+                        name: user.displayName || user.email.split('@')[0],
+                        email: user.email,
+                        nidn:'', jabatan:'', fakultas:'', prodi:'',
+                        isMaster:false,
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                    };
+                    await db.collection('users').doc(user.uid).set(defaultData);
+                    window.userData = defaultData;
+                }
                 document.getElementById('dashWelcome').textContent=window.userData.name;
                 updateMasterUI();
                 showView('dashboardView');loadDashboard();
@@ -649,14 +656,14 @@
             catch(e){toast(e.message,'error');}
             setLoad('changePassBtnText','changePassSpinner',false);
         }
-        // REVISI 4: Aktivasi Master
+        // FIX: Use set with merge to avoid "No document to update" error
         async function activateMaster(){
             const code=document.getElementById('masterCodeInput').value.trim();
             if(code!=='444546')return toast('Kode rahasia salah','error');
             if(window.userData.isMaster)return toast('Akun sudah menjadi Master','info');
             setLoad('activateMasterBtnText','activateMasterSpinner',true);
             try{
-                await db.collection('users').doc(currentUser.uid).update({isMaster:true});
+                await db.collection('users').doc(currentUser.uid).set({isMaster:true}, {merge: true});
                 window.userData.isMaster=true;
                 updateMasterUI();
                 document.getElementById('masterStatusText').classList.remove('hidden');
@@ -721,7 +728,6 @@
                 al.innerHTML=act.map(r=>{const io=r.notulen_id===currentUser?.uid;return`<div class="card card-hover overflow-hidden cursor-pointer" onclick="${io?`enterRoom('${r.id}')`:`showRoomDetail('${r.id}')`}"><div class="p-4"><div class="flex items-start justify-between mb-3"><div class="flex-1 min-w-0 pr-2"><h3 class="font-semibold text-gray-900 text-sm leading-snug line-clamp-2">${r.title||'Rapat'}</h3><span class="inline-block px-2 py-0.5 bg-brand/10 text-brand text-[10px] font-medium rounded-md mt-1.5">${tm[r.jenis_rapat]||'Umum'}</span></div><span class="live-dot mt-1.5"></span></div><div class="flex items-center gap-3 text-[11px] text-muted mb-3"><span>${r.notulen_name||'?'}</span>${r.lokasi?`<span>${r.lokasi}</span>`:''}</div><div class="flex items-center justify-between text-[10px] text-muted"><span>${fmtD(r.createdAt)}</span><span>👥 ${(r.participants?.length||0)+1}</span></div></div><div class="px-4 py-2.5 bg-gray-50 border-t border-gray-100"><div class="w-full py-1.5 ${io?'bg-brand text-white':'bg-gray-200 text-gray-600'} font-medium rounded-lg text-[10px] text-center">${io?'Masuk (Notulen)':'Lihat Detail'}</div></div></div>`;}).join('');
             }
             const rl=document.getElementById('recentRoomsList');
-            // REVISI 4: Master bisa hapus riwayat
             rl.innerHTML=rec.length?rec.map(r=>{
                 const isOwner=r.notulen_id===currentUser?.uid;
                 const canDelete=isOwner || window.userData?.isMaster;
@@ -802,7 +808,7 @@
             setLoad('cBtnText','cSpinner',false);
         }
 
-        // ===================== EDIT ROOM (REVISI 1) =====================
+        // ===================== EDIT ROOM =====================
         function showEditRoomModal(){
             if(!currentRoomId || !isNotulen) return;
             const doc=roomsCache.find(r=>r.id===currentRoomId);
@@ -826,7 +832,6 @@
                 await db.collection('rooms').doc(currentRoomId).update({title,lokasi:loc,agenda});
                 toast('Info rapat diperbarui!','success');
                 hideEditRoomModal();
-                // Update UI locally
                 document.getElementById('rTitle').textContent=title;
                 document.getElementById('rLoc').textContent=loc||'-';
                 document.getElementById('rAgenda').textContent=agenda||'-';
@@ -875,7 +880,7 @@
             setLoad('deleteRoomBtnText','deleteRoomSpinner',false);
         }
 
-        // ===================== ROOM & PARTICIPANTS (REVISI 2) =====================
+        // ===================== ROOM =====================
         async function enterRoom(rid){
             currentRoomId=rid;hasUnsaved=false;
             const doc=await db.collection('rooms').doc(rid).get();
@@ -889,7 +894,6 @@
             document.getElementById('rAgendaBlock').classList.toggle('hidden',!r.agenda);document.getElementById('rTimer').textContent='00:00:00';document.getElementById('rDuration').textContent='';
             window._meetStart=r.createdAt.toDate().getTime();if(timerInterval)clearInterval(timerInterval);timerInterval=setInterval(updateTimer,1000);updateTimer();
             
-            // REVISI 1: Tombol Edit hanya untuk notulen
             document.getElementById('rEditBtn').classList.toggle('hidden', !isNotulen);
             
             if(isNotulen){
@@ -917,8 +921,6 @@
                 if(r.status!=='aktif'){toast('Rapat telah diakhiri','warning');leaveRoom();return;}
                 if(!isNotulen)document.getElementById('viewerNotes').innerHTML=r.notes||'<p class="text-muted italic">Belum ada notulensi...</p>';
             });
-            
-            // REVISI 2: Perbaikan Daftar Peserta
             if(unsubAtt)unsubAtt();
             unsubAtt=db.collection('attendance').where('roomId','==',rid).onSnapshot(snap=>{
                 let participants=[];
@@ -926,7 +928,6 @@
                     const a=d.data();
                     participants.push({id:d.id, ...a});
                 });
-                // Sort by joinedAt client-side to avoid Firestore index errors
                 participants.sort((a,b)=>{
                     if(!a.joinedAt || !b.joinedAt) return 0;
                     return a.joinedAt.toDate() - b.joinedAt.toDate();
