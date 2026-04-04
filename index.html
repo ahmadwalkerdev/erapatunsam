@@ -1,0 +1,920 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ERapatUnsam</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/fontsource-inter@5.1.1/index.css" rel="stylesheet">
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'] },
+                    colors: {
+                        brand: '#2563eb', 'brand-dark': '#1d4ed8', 'brand-light': '#eff6ff',
+                        surface: '#fafbfc', border: '#e5e7eb', muted: '#6b7280'
+                    },
+                    boxShadow: {
+                        'card': '0 1px 3px rgba(0,0,0,0.03), 0 1px 2px rgba(0,0,0,0.05)',
+                        'modal': '0 20px 25px -5px rgba(0,0,0,0.08), 0 8px 10px -6px rgba(0,0,0,0.04)'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+        body { font-family:'Inter',system-ui,-apple-system,sans-serif; background:#f8fafc; color:#111827; min-height:100vh; min-height:100dvh; }
+        .view { display:none; } .view.active { display:flex; }
+        .fade-up { animation: fadeUp 0.35s cubic-bezier(0.16,1,0.3,1); }
+        @keyframes fadeUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+        .scale-in { animation: scaleIn 0.25s cubic-bezier(0.16,1,0.3,1); }
+        @keyframes scaleIn { from{opacity:0;transform:scale(0.96)} to{opacity:1;transform:scale(1)} }
+        .slide-up { animation: slideUp 0.35s cubic-bezier(0.16,1,0.3,1); }
+        @keyframes slideUp { from{transform:translateY(100%)} to{transform:translateY(0)} }
+        .pin-digit { width:46px; height:54px; text-align:center; font-size:1.4rem; font-weight:600; border:1.5px solid #e5e7eb; border-radius:12px; transition:all 0.15s ease; background:#fff; color:#111827; }
+        .pin-digit:focus { border-color:#2563eb; box-shadow:0 0 0 3px rgba(37,99,235,0.08); outline:none; }
+        .pin-digit.filled { border-color:#2563eb; background:#f0f7ff; }
+        .pin-digit.error { border-color:#ef4444; background:#fef2f2; }
+        .toast { position:fixed; top:20px; right:20px; left:20px; max-width:380px; margin:0 auto; z-index:99999; animation: toastIn 0.3s ease, toastOut 0.3s ease-in 2.7s forwards; }
+        @keyframes toastIn { from{transform:translateY(-20px);opacity:0} to{transform:translateY(0);opacity:1} }
+        @keyframes toastOut { from{transform:translateY(0);opacity:1} to{transform:translateY(-20px);opacity:0} }
+        .modal-overlay { background:rgba(0,0,0,0.3); backdrop-filter:blur(4px); }
+        .bottom-sheet { border-radius:20px 20px 0 0; }
+        @media(min-width:640px) { .bottom-sheet { border-radius:20px; } }
+        .spinner { border:2px solid #e5e7eb; border-top-color:#2563eb; border-radius:50%; width:16px; height:16px; animation: spin 0.6s linear infinite; display:inline-block; }
+        @keyframes spin { to{transform:rotate(360deg)} }
+        .card { background:#fff; border:1px solid #e5e7eb; border-radius:12px; transition:all 0.2s ease; }
+        .card-hover:hover { border-color:#d1d5db; box-shadow:0 4px 12px rgba(0,0,0,0.04); transform:translateY(-1px); }
+        .card:active { transform:scale(0.99); }
+        .note-editor { min-height:280px; outline:none; line-height:1.8; color:#374151; }
+        .note-editor:empty::before { content:attr(data-placeholder); color:#9ca3af; font-style:italic; pointer-events:none; }
+        .note-editor ul { list-style:disc; padding-left:20px; }
+        .note-editor ol { list-style:decimal; padding-left:20px; }
+        .note-editor p { margin-bottom:6px; }
+        .note-editor h1 { font-size:1.5rem; font-weight:700; margin:12px 0 6px; }
+        .note-editor h2 { font-size:1.25rem; font-weight:600; margin:10px 0 4px; }
+        .note-editor h3 { font-size:1.1rem; font-weight:600; margin:8px 0 4px; }
+        .note-editor blockquote { border-left:3px solid #2563eb; padding-left:12px; color:#6b7280; font-style:italic; }
+        .note-editor pre { background:#f3f4f6; padding:8px 12px; border-radius:6px; font-family:monospace; font-size:0.9rem; }
+        .note-editor hr { border:none; border-top:1px solid #e5e7eb; margin:12px 0; }
+        .tool-btn { padding:5px 8px; border-radius:6px; font-size:13px; font-weight:500; transition:all 0.12s; min-width:28px; min-height:28px; display:inline-flex; align-items:center; justify-content:center; color:#6b7280; cursor:pointer; border:none; background:transparent; }
+        .tool-btn:hover { background:#f3f4f6; color:#111827; }
+        .tool-btn.active { background:#2563eb; color:#fff; }
+        .tool-sep { width:1px; height:20px; background:#e5e7eb; margin:0 2px; }
+        ::-webkit-scrollbar { width:3px; } ::-webkit-scrollbar-track { background:transparent; } ::-webkit-scrollbar-thumb { background:#d1d5db; border-radius:2px; }
+        :focus-visible { outline:2px solid #2563eb; outline-offset:2px; }
+        .safe-b { padding-bottom:max(16px, env(safe-area-inset-bottom)); }
+        .live-dot { width:6px; height:6px; border-radius:50%; background:#10b981; display:inline-block; animation: livePulse 2s infinite; }
+        @keyframes livePulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+        .input { width:100%; padding:10px 14px; border:1.5px solid #e5e7eb; border-radius:10px; background:#fff; font-size:14px; transition:all 0.15s; color:#111827; }
+        .input:focus { border-color:#2563eb; box-shadow:0 0 0 3px rgba(37,99,235,0.06); outline:none; }
+        .input::placeholder { color:#9ca3af; }
+        .input-sm { padding:8px 12px; font-size:13px; border-radius:8px; }
+        select.input { appearance:none; background-image:url("image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%239ca3af' viewBox='0 0 16 16'%3E%3Cpath d='M4.5 6l3.5 4 3.5-4z'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 10px center; }
+        .btn { display:inline-flex; align-items:center; justify-content:center; gap:6px; padding:10px 20px; border-radius:10px; font-size:14px; font-weight:600; transition:all 0.15s; cursor:pointer; border:none; }
+        .btn:active { transform:scale(0.98); }
+        .btn-primary { background:#2563eb; color:#fff; } .btn-primary:hover { background:#1d4ed8; }
+        .btn-green { background:#10b981; color:#fff; } .btn-green:hover { background:#059669; }
+        .btn-ghost { background:transparent; color:#6b7280; } .btn-ghost:hover { background:#f3f4f6; color:#111827; }
+        .btn-outline { background:#fff; color:#374151; border:1.5px solid #e5e7eb; } .btn-outline:hover { background:#f9fafb; border-color:#d1d5db; }
+        .btn-red { background:#ef4444; color:#fff; } .btn-red:hover { background:#dc2626; }
+        .btn-sm { padding:7px 14px; font-size:13px; border-radius:8px; }
+        .btn-full { width:100%; }
+        .badge { display:inline-flex; align-items:center; padding:2px 8px; border-radius:6px; font-size:11px; font-weight:500; }
+        .badge-blue { background:#eff6ff; color:#2563eb; }
+        .badge-green { background:#ecfdf5; color:#059669; }
+        .badge-gray { background:#f3f4f6; color:#6b7280; }
+        .line-clamp-2 { display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+        .empty-state { text-align:center; padding:40px 20px; }
+        .empty-state svg { width:48px; height:48px; color:#d1d5db; margin:0 auto 12px; }
+        .empty-state p { color:#9ca3af; font-size:13px; }
+        /* Font size selector */
+        .font-size-select { padding:4px 8px; border:1px solid #e5e7eb; border-radius:6px; font-size:13px; color:#6b7280; cursor:pointer; background:#fff; }
+        .font-size-select:hover { background:#f3f4f6; }
+        /* Color picker */
+        .color-input { width:28px; height:28px; padding:0; border:1.5px solid #e5e7eb; border-radius:6px; cursor:pointer; }
+    </style>
+</head>
+<body>
+    <div id="toastContainer"></div>
+
+    <!-- ============ AUTH ============ -->
+    <div id="authView" class="view active min-h-screen items-center justify-center p-5" style="background:#fff;">
+        <div class="w-full max-w-[400px] fade-up">
+            <div class="text-center mb-10">
+                <div class="inline-flex items-center justify-center w-12 h-12 bg-brand/10 rounded-2xl mb-4">
+                    <svg class="w-6 h-6 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+                </div>
+                <h1 class="text-xl font-bold text-gray-900 tracking-tight">ERapatUnsam</h1>
+                <p class="text-muted text-sm mt-1">Notulensi Rapat Digital</p>
+            </div>
+            <div id="loginForm">
+                <div class="space-y-4">
+                    <div><label class="block text-sm font-medium text-gray-700 mb-1.5">Email</label><input id="loginEmail" type="email" placeholder="nama@unsam.ac.id" class="input"></div>
+                    <div><label class="block text-sm font-medium text-gray-700 mb-1.5">Password</label><input id="loginPassword" type="password" placeholder="••••••••" class="input"></div>
+                    <button onclick="handleLogin()" class="btn btn-primary btn-full"><span id="loginBtnText">Masuk</span><div id="loginSpinner" class="spinner hidden" style="border-top-color:#fff;border-color:rgba(255,255,255,0.3)"></div></button>
+                    <div class="relative py-1"><div class="absolute inset-0 flex items-center"><div class="w-full border-t border-gray-100"></div></div><div class="relative flex justify-center"><span class="px-3 bg-white text-xs text-gray-400">atau</span></div></div>
+                    <button onclick="handleGoogleLogin()" class="btn btn-outline btn-full"><svg class="w-4 h-4" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>Masuk dengan Google</button>
+                </div>
+                <p class="text-center text-sm text-muted mt-8">Belum punya akun? <button onclick="toggleAuthMode()" class="text-brand font-semibold hover:underline">Daftar</button></p>
+            </div>
+            <div id="registerForm" class="hidden">
+                <div class="space-y-3">
+                    <div class="grid grid-cols-2 gap-3">
+                        <div><label class="block text-xs font-medium text-gray-600 mb-1">NIDN/NIP</label><input id="regNidn" type="text" placeholder="10 digit" class="input input-sm"></div>
+                        <div><label class="block text-xs font-medium text-gray-600 mb-1">Jabatan</label><select id="regJabatan" class="input input-sm"><option value="">Pilih</option><option>Asisten Ahli</option><option>Lektor</option><option>Lektor Kepala</option><option>Guru Besar</option><option>Tenaga Kependidikan</option></select></div>
+                    </div>
+                    <div><label class="block text-xs font-medium text-gray-600 mb-1">Nama Lengkap</label><input id="regName" type="text" placeholder="Dr. Nama, M.Kom." class="input input-sm"></div>
+                    <div><label class="block text-xs font-medium text-gray-600 mb-1">Email</label><input id="regEmail" type="email" placeholder="nama@unsam.ac.id" class="input input-sm"></div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div><label class="block text-xs font-medium text-gray-600 mb-1">Fakultas</label><select id="regFakultas" class="input input-sm"><option value="">Pilih</option><option>Teknik</option><option>FKIP</option><option>FISIP</option><option>Ekonomi</option><option>Hukum</option><option>Pertanian</option></select></div>
+                        <div><label class="block text-xs font-medium text-gray-600 mb-1">Prodi</label><input id="regProdi" type="text" placeholder="Informatika" class="input input-sm"></div>
+                    </div>
+                    <div><label class="block text-xs font-medium text-gray-600 mb-1">Password</label><input id="regPassword" type="password" placeholder="Min. 8 karakter" class="input input-sm"></div>
+                    <button onclick="handleRegister()" class="btn btn-primary btn-full mt-2"><span id="regBtnText">Daftar</span><div id="regSpinner" class="spinner hidden" style="border-top-color:#fff;border-color:rgba(255,255,255,0.3)"></div></button>
+                </div>
+                <p class="text-center text-sm text-muted mt-6">Sudah punya akun? <button onclick="toggleAuthMode()" class="text-brand font-semibold hover:underline">Masuk</button></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ DASHBOARD ============ -->
+    <div id="dashboardView" class="view min-h-screen flex-col bg-surface">
+        <nav class="bg-white/80 backdrop-blur-xl border-b border-gray-100 sticky top-0 z-40">
+            <div class="max-w-5xl mx-auto px-5 py-3 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 bg-brand rounded-lg flex items-center justify-center">
+                        <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+                    </div>
+                    <div><h1 class="font-semibold text-gray-900 text-sm">ERapatUnsam</h1><p id="dashWelcome" class="text-[11px] text-muted truncate max-w-[140px]"></p></div>
+                </div>
+                <div class="flex items-center gap-1">
+                    <!-- Tombol Masuk Rapat DIHAPUS dari header -->
+                    <button onclick="openCreateModal()" class="btn btn-primary btn-sm"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg><span class="hidden sm:inline">Buat Rapat</span></button>
+                    <button onclick="showSettings()" class="p-2.5 text-gray-400 hover:text-gray-700 hover:bg-gray-50 rounded-xl transition-all" title="Pengaturan"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg></button>
+                    <button onclick="handleLogout()" class="p-2.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all" title="Keluar"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg></button>
+                </div>
+            </div>
+        </nav>
+        <main class="flex-1 max-w-5xl mx-auto w-full px-5 py-5 safe-b">
+            <div class="grid grid-cols-4 gap-3 mb-6">
+                <div class="card p-3.5 text-center"><p class="text-[10px] text-muted font-medium">Hari Ini</p><p id="statToday" class="text-xl font-bold text-gray-900 mt-0.5">0</p></div>
+                <div class="card p-3.5 text-center"><p class="text-[10px] text-muted font-medium">Aktif</p><p id="statActive" class="text-xl font-bold text-emerald-600 mt-0.5">0</p></div>
+                <div class="card p-3.5 text-center"><p class="text-[10px] text-muted font-medium">Peserta</p><p id="statParticipants" class="text-xl font-bold text-amber-600 mt-0.5">0</p></div>
+                <div class="card p-3.5 text-center"><p class="text-[10px] text-muted font-medium">Notulensi</p><p id="statNotes" class="text-xl font-bold text-purple-600 mt-0.5">0</p></div>
+            </div>
+            <div class="flex gap-2 mb-4">
+                <div class="flex-1 relative">
+                    <svg class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                    <input id="searchInput" type="text" placeholder="Cari rapat..." class="input input-sm pl-9" oninput="handleSearch(this.value)">
+                </div>
+            </div>
+            <div class="flex gap-2 mb-5 overflow-x-auto pb-1">
+                <button onclick="setFilter('all')" id="fAll" class="filter-btn px-3.5 py-1.5 bg-gray-900 text-white text-xs font-medium rounded-lg transition-all whitespace-nowrap flex-shrink-0">Semua</button>
+                <button onclick="setFilter('rapat_dosen')" id="fRapatDosen" class="filter-btn px-3.5 py-1.5 bg-white border border-gray-200 text-gray-600 text-xs font-medium rounded-lg hover:bg-gray-50 transition-all whitespace-nowrap flex-shrink-0">Rapat Dosen</button>
+                <button onclick="setFilter('bimbingan_skripsi')" id="fBimbingan" class="filter-btn px-3.5 py-1.5 bg-white border border-gray-200 text-gray-600 text-xs font-medium rounded-lg hover:bg-gray-50 transition-all whitespace-nowrap flex-shrink-0">Bimbingan</button>
+                <button onclick="setFilter('rapat_prodi')" id="fProdi" class="filter-btn px-3.5 py-1.5 bg-white border border-gray-200 text-gray-600 text-xs font-medium rounded-lg hover:bg-gray-50 transition-all whitespace-nowrap flex-shrink-0">Rapat Prodi</button>
+                <button onclick="setFilter('riset_pengabdian')" id="fRiset" class="filter-btn px-3.5 py-1.5 bg-white border border-gray-200 text-gray-600 text-xs font-medium rounded-lg hover:bg-gray-50 transition-all whitespace-nowrap flex-shrink-0">Riset</button>
+            </div>
+            <div class="mb-3 flex items-center justify-between"><h2 class="text-sm font-semibold text-gray-900">Rapat Berlangsung</h2><span id="activeCount" class="badge badge-green">0</span></div>
+            <div id="activeRoomsList" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-7"></div>
+            <div class="mb-3 flex items-center justify-between"><h2 class="text-sm font-semibold text-gray-900">Riwayat Rapat</h2><span id="recentCount" class="badge badge-gray">0</span></div>
+            <div id="recentRoomsList" class="space-y-2"></div>
+        </main>
+    </div>
+
+    <!-- ============ SETTINGS ============ -->
+    <div id="settingsView" class="view min-h-screen flex-col bg-surface">
+        <nav class="bg-white/80 backdrop-blur-xl border-b border-gray-100 sticky top-0 z-40">
+            <div class="max-w-5xl mx-auto px-5 py-3 flex items-center justify-between">
+                <div class="flex items-center gap-2"><button onclick="backToDashboard()" class="p-2 text-gray-400 hover:text-gray-700 hover:bg-gray-50 rounded-xl transition-all"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg></button><h1 class="font-semibold text-gray-900 text-sm">Pengaturan Akun</h1></div>
+                <button onclick="backToDashboard()" class="btn btn-ghost btn-sm">Tutup</button>
+            </div>
+        </nav>
+        <main class="flex-1 max-w-5xl mx-auto w-full px-5 py-5 safe-b">
+            <div class="flex flex-col lg:flex-row gap-5">
+                <div class="lg:w-48 flex-shrink-0">
+                    <div class="card p-4 sticky top-20">
+                        <div class="text-center mb-4 pb-4 border-b border-gray-100">
+                            <div id="settingsAvatar" class="w-14 h-14 mx-auto rounded-full bg-brand/10 text-brand flex items-center justify-center text-lg font-bold mb-2"></div>
+                            <p id="settingsUserName" class="font-semibold text-gray-900 text-sm"></p>
+                            <p id="settingsUserEmail" class="text-[11px] text-muted truncate"></p>
+                        </div>
+                        <div class="space-y-1">
+                            <button onclick="switchSettingsTab('profile')" id="tabProfile" class="s-tab w-full text-left px-3 py-2 rounded-lg text-xs flex items-center gap-2.5 bg-brand/10 text-brand font-medium"><svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>Profil</button>
+                            <button onclick="switchSettingsTab('security')" id="tabSecurity" class="s-tab w-full text-left px-3 py-2 rounded-lg text-xs flex items-center gap-2.5 text-gray-500 hover:bg-gray-50 transition-all"><svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>Keamanan</button>
+                            <button onclick="switchSettingsTab('activity')" id="tabActivity" class="s-tab w-full text-left px-3 py-2 rounded-lg text-xs flex items-center gap-2.5 text-gray-500 hover:bg-gray-50 transition-all"><svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>Aktivitas</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <div id="contentProfile" class="tab-content">
+                        <div class="card p-5 mb-4">
+                            <h3 class="text-sm font-semibold text-gray-900 mb-4">Informasi Profil</h3>
+                            <div class="space-y-4">
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <!-- Semua field bisa diedit, termasuk untuk user Google -->
+                                    <div><label class="block text-xs font-medium text-gray-500 mb-1">NIDN/NIP</label><input id="sNidn" class="input input-sm"></div>
+                                    <div><label class="block text-xs font-medium text-gray-500 mb-1">Jabatan</label><select id="sJabatan" class="input input-sm"><option value="">Pilih</option><option>Asisten Ahli</option><option>Lektor</option><option>Lektor Kepala</option><option>Guru Besar</option><option>Tenaga Kependidikan</option></select></div>
+                                </div>
+                                <div><label class="block text-xs font-medium text-gray-500 mb-1">Nama Lengkap</label><input id="sName" class="input input-sm"></div>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div><label class="block text-xs font-medium text-gray-500 mb-1">Fakultas</label><select id="sFakultas" class="input input-sm"><option value="">Pilih</option><option>Teknik</option><option>FKIP</option><option>FISIP</option><option>Ekonomi</option><option>Hukum</option><option>Pertanian</option></select></div>
+                                    <div><label class="block text-xs font-medium text-gray-500 mb-1">Prodi</label><input id="sProdi" class="input input-sm"></div>
+                                </div>
+                                <div><label class="block text-xs font-medium text-gray-500 mb-1">Email</label><input id="sEmail" class="input input-sm bg-gray-50 text-gray-400" disabled></div>
+                                <button onclick="saveProfile()" id="saveProfileBtn" class="btn btn-primary btn-sm w-fit"><span id="saveProfileBtnText">Simpan Perubahan</span><div id="saveProfileSpinner" class="spinner hidden" style="width:14px;height:14px;border-width:2px;border-top-color:#fff;border-color:rgba(255,255,255,0.3)"></div></button>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="contentSecurity" class="tab-content hidden">
+                        <div class="card p-5 mb-4">
+                            <h3 class="text-sm font-semibold text-gray-900 mb-4">Ubah Password</h3>
+                            <div class="space-y-4">
+                                <div><label class="block text-xs font-medium text-gray-500 mb-1">Password Baru</label><input id="newPass" type="password" placeholder="Min. 8 karakter" class="input input-sm sm:max-w-sm"></div>
+                                <div><label class="block text-xs font-medium text-gray-500 mb-1">Konfirmasi</label><input id="confPass" type="password" placeholder="Ulangi password" class="input input-sm sm:max-w-sm"></div>
+                                <button onclick="changePassword()" id="changePassBtn" class="btn btn-primary btn-sm w-fit"><span id="changePassBtnText">Ubah</span><div id="changePassSpinner" class="spinner hidden" style="width:14px;height:14px;border-width:2px;border-top-color:#fff;border-color:rgba(255,255,255,0.3)"></div></button>
+                            </div>
+                        </div>
+                        <div class="card p-5 border-red-200">
+                            <h3 class="text-sm font-semibold text-red-600 mb-2">Hapus Akun</h3>
+                            <p class="text-xs text-muted mb-4">Tindakan ini tidak dapat dibatalkan.</p>
+                            <button onclick="showDeleteModal()" class="btn btn-red btn-sm">Hapus Akun</button>
+                        </div>
+                    </div>
+                    <div id="contentActivity" class="tab-content hidden">
+                        <div class="card p-5"><h3 class="text-sm font-semibold text-gray-900 mb-4">Riwayat Rapat</h3><div id="activityList" class="space-y-2"></div></div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- ============ DELETE ACCOUNT MODAL ============ -->
+    <div id="deleteModal" class="hidden fixed inset-0 z-[100] items-center justify-center p-4">
+        <div class="modal-overlay absolute inset-0" onclick="hideDeleteModal()"></div>
+        <div class="relative bg-white rounded-2xl shadow-modal w-full max-w-sm p-6 scale-in text-center">
+            <div class="w-12 h-12 bg-red-50 rounded-2xl flex items-center justify-center mx-auto mb-4"><svg class="w-6 h-6 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg></div>
+            <h3 class="text-lg font-semibold text-gray-900 mb-1">Hapus Akun?</h3>
+            <p class="text-sm text-muted mb-5">Ketik email untuk konfirmasi</p>
+            <input id="delEmail" type="email" placeholder="Email Anda" class="input mb-4">
+            <div class="flex gap-3"><button onclick="hideDeleteModal()" class="btn btn-outline flex-1 btn-sm">Batal</button><button onclick="confirmDelete()" class="btn btn-red flex-1 btn-sm">Hapus</button></div>
+        </div>
+    </div>
+
+    <!-- ============ PIN MODAL ============ -->
+    <div id="pinModal" class="hidden fixed inset-0 z-[100] items-end sm:items-center justify-center">
+        <div class="modal-overlay absolute inset-0" onclick="hidePinModal()"></div>
+        <div class="relative bg-white rounded-t-3xl sm:rounded-2xl shadow-modal w-full max-w-sm p-6 slide-up bottom-sheet safe-b">
+            <div class="w-10 h-1 bg-gray-200 rounded-full mx-auto mb-5 sm:hidden"></div>
+            <button onclick="hidePinModal()" class="absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-600 rounded-xl hover:bg-gray-100 transition-all"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+            <div class="text-center mb-6">
+                <div class="w-12 h-12 bg-brand/10 rounded-2xl flex items-center justify-center mx-auto mb-3"><svg class="w-6 h-6 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg></div>
+                <h3 class="text-lg font-semibold text-gray-900">Masukkan PIN</h3>
+                <p class="text-sm text-muted mt-1">Dapatkan PIN dari notulen</p>
+            </div>
+            <div class="flex justify-center gap-2.5 mb-6">
+                <input id="p0" class="pin-digit" maxlength="1" inputmode="numeric" oninput="pinInput(0)" onkeydown="pinKey(event,0)">
+                <input id="p1" class="pin-digit" maxlength="1" inputmode="numeric" oninput="pinInput(1)" onkeydown="pinKey(event,1)">
+                <input id="p2" class="pin-digit" maxlength="1" inputmode="numeric" oninput="pinInput(2)" onkeydown="pinKey(event,2)">
+                <input id="p3" class="pin-digit" maxlength="1" inputmode="numeric" oninput="pinInput(3)" onkeydown="pinKey(event,3)">
+                <input id="p4" class="pin-digit" maxlength="1" inputmode="numeric" oninput="pinInput(4)" onkeydown="pinKey(event,4)">
+                <input id="p5" class="pin-digit" maxlength="1" inputmode="numeric" oninput="pinInput(5)" onkeydown="pinKey(event,5)">
+            </div>
+            <button onclick="submitPin()" class="btn btn-primary btn-full"><span id="pinBtnText">Masuk Rapat</span><div id="pinSpinner" class="spinner hidden" style="border-top-color:#fff;border-color:rgba(255,255,255,0.3)"></div></button>
+            <div id="pinError" class="mt-3 text-center text-red-500 text-xs font-medium hidden"></div>
+        </div>
+    </div>
+
+    <!-- ============ CREATE MODAL ============ -->
+    <div id="createModal" class="hidden fixed inset-0 z-[100] items-end sm:items-center justify-center">
+        <div class="modal-overlay absolute inset-0" onclick="hideCreateModal()"></div>
+        <div class="relative bg-white rounded-t-3xl sm:rounded-2xl shadow-modal w-full max-w-sm p-6 slide-up bottom-sheet safe-b max-h-[90vh] overflow-y-auto">
+            <div class="w-10 h-1 bg-gray-200 rounded-full mx-auto mb-5 sm:hidden"></div>
+            <button onclick="hideCreateModal()" class="absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-600 rounded-xl hover:bg-gray-100 transition-all"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+            <div class="text-center mb-6">
+                <div class="w-12 h-12 bg-emerald-50 rounded-2xl flex items-center justify-center mx-auto mb-3"><svg class="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg></div>
+                <h3 class="text-lg font-semibold text-gray-900">Buat Rapat Baru</h3>
+                <p class="text-sm text-muted mt-1">Anda akan menjadi notulen</p>
+            </div>
+            <div class="space-y-3.5">
+                <div><label class="block text-xs font-medium text-gray-500 mb-1">Judul Rapat</label><input id="cTitle" class="input" placeholder="Contoh: Rapat Koordinasi Prodi"></div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div><label class="block text-xs font-medium text-gray-500 mb-1">Jenis</label><select id="cType" class="input"><option value="rapat_dosen">Rapat Dosen</option><option value="bimbingan_skripsi">Bimbingan</option><option value="rapat_prodi">Rapat Prodi</option><option value="rapat_fakultas">Rapat Fakultas</option><option value="riset_pengabdian">Riset</option><option value="koordinasi_akademik">Koordinasi</option><option value="lainnya">Lainnya</option></select></div>
+                    <div><label class="block text-xs font-medium text-gray-500 mb-1">Lokasi</label><input id="cLoc" class="input" placeholder="Gedung B Lt.3"></div>
+                </div>
+                <div><label class="block text-xs font-medium text-gray-500 mb-1">Agenda</label><textarea id="cAgenda" rows="3" placeholder="Poin-poin agenda..." class="input resize-none"></textarea></div>
+                <button onclick="submitCreate()" class="btn btn-green btn-full mt-1"><span id="cBtnText">Buat & Mulai</span><div id="cSpinner" class="spinner hidden" style="border-top-color:#fff;border-color:rgba(255,255,255,0.3)"></div></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ ROOM DETAIL MODAL ============ -->
+    <div id="roomDetailModal" class="hidden fixed inset-0 z-[100] items-end sm:items-center justify-center">
+        <div class="modal-overlay absolute inset-0" onclick="hideRoomDetail()"></div>
+        <div class="relative bg-white rounded-t-3xl sm:rounded-2xl shadow-modal w-full max-w-sm p-6 slide-up bottom-sheet safe-b">
+            <div class="w-10 h-1 bg-gray-200 rounded-full mx-auto mb-5 sm:hidden"></div>
+            <div id="rdContent"></div>
+        </div>
+    </div>
+
+    <!-- ============ ROOM VIEW ============ -->
+    <div id="roomView" class="view min-h-screen flex-col bg-surface">
+        <div class="bg-white/80 backdrop-blur-xl border-b border-gray-100 sticky top-0 z-40">
+            <div class="max-w-6xl mx-auto px-5 py-3">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3 min-w-0 flex-1">
+                        <button onclick="promptLeave()" class="p-2 text-gray-400 hover:text-gray-700 hover:bg-gray-50 rounded-xl transition-all flex-shrink-0"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg></button>
+                        <div class="min-w-0 flex-1"><h2 id="rTitle" class="font-semibold text-gray-900 text-sm truncate"></h2><div class="flex items-center gap-2 mt-0.5"><span class="live-dot"></span><span class="text-[11px] text-emerald-600 font-medium">Berlangsung</span><span id="rTimer" class="text-[11px] font-mono font-semibold text-brand bg-brand-light px-1.5 py-0.5 rounded-md">00:00:00</span><span id="rDuration" class="text-[10px] text-muted"></span></div></div>
+                    </div>
+                    <div class="flex items-center gap-2 flex-shrink-0 ml-3">
+                        <div id="rPinBox" class="hidden"><div class="flex items-center gap-1.5 bg-amber-50 border border-amber-100 rounded-lg px-3 py-1.5"><span class="text-[10px] text-amber-600 font-medium">PIN</span><span id="rPin" class="font-bold text-amber-800 text-xs tracking-[0.15em]"></span><button onclick="copyPin()" class="p-0.5 text-amber-500 hover:text-amber-700"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg></button></div></div>
+                        <button id="rDeleteBtn" onclick="showDeleteRoomModal()" class="hidden px-3 py-1.5 bg-red-50 text-red-600 font-semibold rounded-lg hover:bg-red-100 transition-all text-xs flex items-center gap-1"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg><span class="hidden sm:inline">Hapus</span></button>
+                        <button id="rEndBtn" onclick="showEndModal()" class="hidden px-3 py-1.5 bg-red-50 text-red-600 font-semibold rounded-lg hover:bg-red-100 transition-all text-xs">Akhiri</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="flex-1 max-w-6xl mx-auto w-full px-5 py-4 safe-b">
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-4">
+                <div class="lg:col-span-3">
+                    <div id="notulenMode" class="hidden">
+                        <div class="card overflow-hidden">
+                            <!-- Rich Text Toolbar Lengkap -->
+                            <div class="px-3 py-2 border-b border-gray-100 bg-gray-50/50">
+                                <div class="flex items-center gap-1 flex-wrap">
+                                    <!-- Font Size -->
+                                    <select id="fontSizeSelect" onchange="applyFontSize(this.value)" class="font-size-select" title="Ukuran Font">
+                                        <option value="">Ukuran</option>
+                                        <option value="1">Kecil</option>
+                                        <option value="2">Normal</option>
+                                        <option value="3">Sedang</option>
+                                        <option value="4">Besar</option>
+                                        <option value="5">Sangat Besar</option>
+                                    </select>
+                                    <div class="tool-sep"></div>
+                                    <!-- Formatting -->
+                                    <button onclick="fmt('bold')" class="tool-btn font-bold" title="Bold">B</button>
+                                    <button onclick="fmt('italic')" class="tool-btn italic" title="Italic">I</button>
+                                    <button onclick="fmt('underline')" class="tool-btn underline" title="Underline">U</button>
+                                    <button onclick="fmt('strikeThrough')" class="tool-btn" title="Strikethrough"><s>S</s></button>
+                                    <div class="tool-sep"></div>
+                                    <!-- Headings -->
+                                    <button onclick="fmt('formatBlock','<h1>')" class="tool-btn text-xs font-bold" title="Heading 1">H1</button>
+                                    <button onclick="fmt('formatBlock','<h2>')" class="tool-btn text-xs font-bold" title="Heading 2">H2</button>
+                                    <button onclick="fmt('formatBlock','<h3>')" class="tool-btn text-xs font-bold" title="Heading 3">H3</button>
+                                    <button onclick="fmt('formatBlock','<p>')" class="tool-btn text-xs" title="Paragraph">¶</button>
+                                    <div class="tool-sep"></div>
+                                    <!-- Lists -->
+                                    <button onclick="fmt('insertUnorderedList')" class="tool-btn text-xs" title="Bullet List">• List</button>
+                                    <button onclick="fmt('insertOrderedList')" class="tool-btn text-xs" title="Numbered List">1. List</button>
+                                    <button onclick="fmt('indent')" class="tool-btn text-xs" title="Indent">⇥</button>
+                                    <button onclick="fmt('outdent')" class="tool-btn text-xs" title="Outdent">⇤</button>
+                                    <div class="tool-sep"></div>
+                                    <!-- Alignment -->
+                                    <button onclick="fmt('justifyLeft')" class="tool-btn text-xs" title="Rata Kiri">≡←</button>
+                                    <button onclick="fmt('justifyCenter')" class="tool-btn text-xs" title="Rata Tengah">≡</button>
+                                    <button onclick="fmt('justifyRight')" class="tool-btn text-xs" title="Rata Kanan">≡→</button>
+                                    <div class="tool-sep"></div>
+                                    <!-- Colors -->
+                                    <input type="color" id="textColor" value="#000000" class="color-input" onchange="applyForeColor(this.value)" title="Warna Teks">
+                                    <input type="color" id="bgColor" value="#ffff00" class="color-input" onchange="applyHiliteColor(this.value)" title="Warna Background">
+                                    <div class="tool-sep"></div>
+                                    <!-- Special -->
+                                    <button onclick="fmt('formatBlock','<blockquote>')" class="tool-btn text-xs" title="Blockquote">❝</button>
+                                    <button onclick="fmt('insertHorizontalRule')" class="tool-btn text-xs" title="Garis">―</button>
+                                    <button onclick="fmt('removeFormat')" class="tool-btn text-xs" title="Hapus Format">✕</button>
+                                    <div class="flex-1"></div>
+                                    <button onclick="exportNotes()" class="tool-btn text-xs text-brand" title="Download Notulen"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg></button>
+                                    <span id="saveInd" class="text-[10px] text-gray-400 flex items-center gap-1.5"><span class="w-1.5 h-1.5 bg-emerald-500 rounded-full"></span>Tersimpan</span>
+                                </div>
+                            </div>
+                            <div id="editor" contenteditable="true" data-placeholder="Mulai menulis notulensi..." class="note-editor w-full p-4 text-sm"></div>
+                            <div class="px-4 py-2 border-t border-gray-100 bg-gray-50/50 flex items-center justify-between text-[10px] text-gray-400"><span id="charCount">0 karakter</span><span id="wordCount">0 kata</span></div>
+                        </div>
+                    </div>
+                    <div id="viewerMode" class="hidden">
+                        <div class="card overflow-hidden">
+                            <div class="px-4 py-2.5 border-b border-gray-100 bg-gray-50/50 flex items-center justify-between"><div class="flex items-center gap-2"><svg class="w-4 h-4 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg><span class="text-xs font-medium text-gray-700">Mode Peserta</span></div><div class="flex items-center gap-1.5"><div class="live-dot"></div><span class="text-[10px] text-emerald-600 font-medium">Realtime</span></div></div>
+                            <div class="p-4"><div id="viewerNotes" class="note-editor text-sm min-h-[250px] cursor-default"></div></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="lg:col-span-1 space-y-4">
+                    <div class="card p-4">
+                        <h3 class="text-xs font-semibold text-gray-900 mb-3">Info Rapat</h3>
+                        <div class="space-y-2.5 text-xs">
+                            <div><span class="text-muted block mb-0.5">Notulen</span><p id="rNotulen" class="font-medium text-gray-900"></p></div>
+                            <div><span class="text-muted block mb-0.5">Jenis</span><p id="rType" class="font-medium text-gray-900"></p></div>
+                            <div><span class="text-muted block mb-0.5">Lokasi</span><p id="rLoc" class="font-medium text-gray-900"></p></div>
+                            <div><span class="text-muted block mb-0.5">Mulai</span><p id="rStart" class="font-medium text-gray-900"></p></div>
+                            <div id="rAgendaBlock" class="pt-2.5 border-t border-gray-100"><span class="text-muted block mb-0.5">Agenda</span><p id="rAgenda" class="font-medium text-gray-700 leading-relaxed"></p></div>
+                        </div>
+                        <button onclick="copyRoomInfo()" class="btn btn-outline btn-full btn-sm mt-3"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>Salin Info Rapat</button>
+                    </div>
+                    <div class="card p-4">
+                        <h3 class="text-xs font-semibold text-gray-900 mb-3">Peserta (<span id="rPCount">0</span>)</h3>
+                        <div id="rPList" class="space-y-1.5 max-h-48 overflow-y-auto"></div>
+                    </div>
+                    <div id="rExportBox" class="hidden card p-4">
+                        <h3 class="text-xs font-semibold text-gray-900 mb-2.5">Daftar Hadir</h3>
+                        <button onclick="exportCSV()" class="btn btn-outline btn-full btn-sm"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>Export CSV</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ DELETE ROOM MODAL ============ -->
+    <div id="deleteRoomModal" class="hidden fixed inset-0 z-[100] items-center justify-center p-4">
+        <div class="modal-overlay absolute inset-0" onclick="hideDeleteRoomModal()"></div>
+        <div class="relative bg-white rounded-2xl shadow-modal w-full max-w-sm p-6 scale-in text-center">
+            <div class="w-12 h-12 bg-red-50 rounded-2xl flex items-center justify-center mx-auto mb-4"><svg class="w-6 h-6 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></div>
+            <h3 class="text-lg font-semibold text-gray-900 mb-1">Hapus Rapat?</h3>
+            <p class="text-sm text-muted mb-2">Rapat "<span id="deleteRoomTitle" class="font-medium text-gray-900"></span>" akan dihapus permanen.</p>
+            <p class="text-xs text-amber-600 font-medium mb-5 bg-amber-50 px-3 py-2 rounded-lg">Semua data notulensi dan daftar hadir akan hilang.</p>
+            <div class="flex gap-3">
+                <button onclick="hideDeleteRoomModal()" class="btn btn-outline flex-1 btn-sm">Batal</button>
+                <button onclick="confirmDeleteRoom()" id="confirmDeleteRoomBtn" class="btn btn-red flex-1 btn-sm"><span id="deleteRoomBtnText">Hapus Rapat</span><div id="deleteRoomSpinner" class="spinner hidden" style="width:14px;height:14px;border-width:2px;border-top-color:#fff;border-color:rgba(255,255,255,0.3)"></div></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ LEAVE MODAL ============ -->
+    <div id="leaveModal" class="hidden fixed inset-0 z-[100] items-center justify-center p-4">
+        <div class="modal-overlay absolute inset-0" onclick="hideLeaveModal()"></div>
+        <div class="relative bg-white rounded-2xl shadow-modal w-full max-w-sm p-6 scale-in text-center">
+            <div class="w-12 h-12 bg-amber-50 rounded-2xl flex items-center justify-center mx-auto mb-4"><svg class="w-6 h-6 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg></div>
+            <h3 class="text-lg font-semibold text-gray-900 mb-1">Keluar Rapat?</h3>
+            <p id="leaveMsg" class="text-sm text-muted mb-5">Perubahan notulensi akan tersimpan otomatis.</p>
+            <div class="flex gap-3"><button onclick="hideLeaveModal()" class="btn btn-outline flex-1 btn-sm">Batal</button><button onclick="confirmLeave()" class="btn btn-primary flex-1 btn-sm">Keluar</button></div>
+        </div>
+    </div>
+
+    <!-- ============ END MODAL ============ -->
+    <div id="endModal" class="hidden fixed inset-0 z-[100] items-center justify-center p-4">
+        <div class="modal-overlay absolute inset-0" onclick="hideEndModal()"></div>
+        <div class="relative bg-white rounded-2xl shadow-modal w-full max-w-sm p-6 scale-in text-center">
+            <div class="w-12 h-12 bg-red-50 rounded-2xl flex items-center justify-center mx-auto mb-4"><svg class="w-6 h-6 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg></div>
+            <h3 class="text-lg font-semibold text-gray-900 mb-1">Akhiri Rapat?</h3><p class="text-sm text-muted mb-5">Notulensi akan tersimpan.</p>
+            <div class="flex gap-3"><button onclick="hideEndModal()" class="btn btn-outline flex-1 btn-sm">Batal</button><button onclick="confirmEnd()" class="btn btn-red flex-1 btn-sm">Akhiri</button></div>
+        </div>
+    </div>
+
+    <script>
+        // ===================== CONFIG =====================
+        const firebaseConfig = {
+            apiKey:"AIzaSyCBNXmBtTQrPmtZMMuc-x9NVSF16tXT-0U",
+            authDomain:"erapatunsam-8c240.firebaseapp.com",
+            projectId:"erapatunsam-8c240",
+            storageBucket:"erapatunsam-8c240.firebasestorage.app",
+            messagingSenderId:"617985924115",
+            appId:"1:617985924115:web:6edc6c27b7094f81faf3e6",
+            measurementId:"G-1Z89CZYR8G"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        // ===================== STATE =====================
+        let currentUser=null, currentRoomId=null, isNotulen=false;
+        let unsubRoom=null, unsubAtt=null;
+        let saveTimer=null, timerInterval=null;
+        let activeFilter='all', searchQuery='';
+        let roomsCache=[];
+        let pendingPinRoom=null;
+        let hasUnsaved=false, lastSavedContent='';
+
+        // ===================== UTILS =====================
+        function toast(msg, type='success') {
+            const c=document.getElementById('toastContainer');
+            const colors={success:'bg-gray-900',error:'bg-red-600',info:'bg-brand',warning:'bg-amber-500'};
+            const t=document.createElement('div');
+            t.className=`toast ${colors[type]} text-white px-4 py-2.5 rounded-xl shadow-lg text-xs font-medium`;
+            t.textContent=msg;
+            c.appendChild(t);
+            setTimeout(()=>{if(t.parentNode)t.remove();},3000);
+        }
+        function genPin(){return String(Math.floor(100000+Math.random()*900000));}
+        function fmtD(ts){return ts?new Date(ts.toDate()).toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'}):'-';}
+        function fmtT(ts){return ts?new Date(ts.toDate()).toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'}):'-';}
+        function fmtFull(ts){return ts?new Date(ts.toDate()).toLocaleString('id-ID',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}):'-';}
+        function showView(id){document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));document.getElementById(id).classList.add('active');}
+        function setLoad(btnId,spinId,on){const b=document.getElementById(btnId),s=document.getElementById(spinId);if(b)b.classList.toggle('hidden',on);if(s)s.classList.toggle('hidden',!on);}
+        function toggleAuthMode(){document.getElementById('loginForm').classList.toggle('hidden');document.getElementById('registerForm').classList.toggle('hidden');}
+        function initials(name){if(!name)return'?';return name.split(' ').filter(w=>w.length>0).map(w=>w[0]).join('').substring(0,2).toUpperCase();}
+        function updateTimer(){
+            if(!window._meetStart)return;
+            const d=Math.floor((Date.now()-window._meetStart)/1000);
+            document.getElementById('rTimer').textContent=[Math.floor(d/3600),Math.floor((d%3600)/60),d%60].map(x=>String(x).padStart(2,'0')).join(':');
+            const h=Math.floor(d/3600),m=Math.floor((d%3600)/60);
+            document.getElementById('rDuration').textContent=h>0?`${h}j ${m}m`:`${m}m`;
+        }
+
+        // ===================== RICH TEXT FUNCTIONS =====================
+        function fmt(cmd, value=null) {
+            document.execCommand(cmd, false, value);
+            document.getElementById('editor').focus();
+        }
+        function applyFontSize(val) {
+            if(!val) return;
+            document.execCommand('fontSize', false, val);
+            document.getElementById('fontSizeSelect').value = '';
+            document.getElementById('editor').focus();
+        }
+        function applyForeColor(color) {
+            document.execCommand('foreColor', false, color);
+            document.getElementById('editor').focus();
+        }
+        function applyHiliteColor(color) {
+            document.execCommand('hiliteColor', false, color);
+            document.getElementById('editor').focus();
+        }
+
+        // ===================== AUTH =====================
+        async function handleLogin(){
+            const e=document.getElementById('loginEmail').value.trim(),p=document.getElementById('loginPassword').value;
+            if(!e||!p)return toast('Email & password harus diisi','error');
+            setLoad('loginBtnText','loginSpinner',true);
+            try{await auth.signInWithEmailAndPassword(e,p);toast('Berhasil masuk!','success');}
+            catch(err){toast(err.message.replace('Firebase: ',''),'error');}
+            setLoad('loginBtnText','loginSpinner',false);
+        }
+        async function handleGoogleLogin(){
+            const provider=new firebase.auth.GoogleAuthProvider();
+            try{await auth.signInWithPopup(provider);toast('Berhasil masuk!','success');}
+            catch(err){if(!err.message.includes('popup'))toast(err.message,'error');}
+        }
+        async function handleRegister(){
+            const name=document.getElementById('regName').value.trim(),email=document.getElementById('regEmail').value.trim(),nidn=document.getElementById('regNidn').value.trim(),jab=document.getElementById('regJabatan').value,fak=document.getElementById('regFakultas').value,prodi=document.getElementById('regProdi').value.trim(),pass=document.getElementById('regPassword').value;
+            if(!name||!email||!nidn||!jab||!fak||!prodi||!pass)return toast('Semua field harus diisi','error');
+            if(pass.length<8)return toast('Password minimal 8 karakter','error');
+            setLoad('regBtnText','regSpinner',true);
+            try{const cred=await auth.createUserWithEmailAndPassword(email,pass);await cred.user.updateProfile({displayName:name});await db.collection('users').doc(cred.user.uid).set({name,email,nidn,jabatan:jab,fakultas:fak,prodi,role:'dosen',createdAt:firebase.firestore.FieldValue.serverTimestamp()});toast('Akun berhasil dibuat!','success');}
+            catch(err){toast(err.message.replace('Firebase: ',''),'error');}
+            setLoad('regBtnText','regSpinner',false);
+        }
+        async function handleLogout(){if(currentRoomId)await cleanup();if(unsubRoom)unsubRoom();await auth.signOut();toast('Berhasil keluar','info');}
+        auth.onAuthStateChanged(async(user)=>{
+            if(user){
+                currentUser=user;
+                const doc=await db.collection('users').doc(user.uid).get();
+                window.userData=doc.exists?doc.data():{name:user.displayName||user.email.split('@')[0],email:user.email,nidn:'',jabatan:'',fakultas:'',prodi:''};
+                document.getElementById('dashWelcome').textContent=window.userData.name;
+                showView('dashboardView');loadDashboard();
+            }else{currentUser=null;currentRoomId=null;isNotulen=false;window.userData=null;showView('authView');}
+        });
+
+        // ===================== SETTINGS =====================
+        function showSettings(){
+            if(!window.userData)return;
+            const u=window.userData;
+            // Semua field bisa diedit - tidak ada yang disabled
+            document.getElementById('sName').value=u.name||'';
+            document.getElementById('sEmail').value=u.email||'';
+            document.getElementById('sNidn').value=u.nidn||'';
+            document.getElementById('sJabatan').value=u.jabatan||'';
+            document.getElementById('sFakultas').value=u.fakultas||'';
+            document.getElementById('sProdi').value=u.prodi||'';
+            document.getElementById('settingsAvatar').textContent=initials(u.name);
+            document.getElementById('settingsUserName').textContent=u.name||'';
+            document.getElementById('settingsUserEmail').textContent=u.email||'';
+            switchSettingsTab('profile');loadActivity();showView('settingsView');
+        }
+        function backToDashboard(){showView('dashboardView');loadDashboard();}
+        function switchSettingsTab(tab){
+            document.querySelectorAll('.tab-content').forEach(el=>el.classList.add('hidden'));
+            document.querySelectorAll('.s-tab').forEach(el=>{el.classList.remove('bg-brand/10','text-brand','font-medium');el.classList.add('text-gray-500');});
+            document.getElementById('content'+tab.charAt(0).toUpperCase()+tab.slice(1)).classList.remove('hidden');
+            const btn=document.getElementById('tab'+tab.charAt(0).toUpperCase()+tab.slice(1));
+            btn.classList.add('bg-brand/10','text-brand','font-medium');btn.classList.remove('text-gray-500');
+        }
+        async function saveProfile(){
+            const n=document.getElementById('sName').value.trim();
+            const nidn=document.getElementById('sNidn').value.trim();
+            const jab=document.getElementById('sJabatan').value;
+            const fak=document.getElementById('sFakultas').value;
+            const prodi=document.getElementById('sProdi').value.trim();
+            if(!n)return toast('Nama tidak boleh kosong','error');
+            setLoad('saveProfileBtnText','saveProfileSpinner',true);
+            try{
+                await db.collection('users').doc(currentUser.uid).update({
+                    name:n, nidn:nidn, jabatan:jab, fakultas:fak, prodi:prodi
+                });
+                window.userData.name=n;
+                window.userData.nidn=nidn;
+                window.userData.jabatan=jab;
+                window.userData.fakultas=fak;
+                window.userData.prodi=prodi;
+                document.getElementById('settingsAvatar').textContent=initials(n);
+                document.getElementById('settingsUserName').textContent=n;
+                document.getElementById('dashWelcome').textContent=n;
+                toast('Profil diperbarui!','success');
+            } catch(e){toast(e.message,'error');}
+            setLoad('saveProfileBtnText','saveProfileSpinner',false);
+        }
+        async function changePassword(){
+            const np=document.getElementById('newPass').value,cp=document.getElementById('confPass').value;
+            if(!np||!cp)return toast('Password harus diisi','error');
+            if(np.length<8)return toast('Minimal 8 karakter','error');
+            if(np!==cp)return toast('Konfirmasi tidak cocok','error');
+            setLoad('changePassBtnText','changePassSpinner',true);
+            try{await currentUser.updatePassword(np);toast('Password diubah!','success');document.getElementById('newPass').value='';document.getElementById('confPass').value='';}
+            catch(e){toast(e.message,'error');}
+            setLoad('changePassBtnText','changePassSpinner',false);
+        }
+        function showDeleteModal(){document.getElementById('deleteModal').classList.remove('hidden');document.getElementById('deleteModal').classList.add('flex');document.getElementById('delEmail').value='';}
+        function hideDeleteModal(){document.getElementById('deleteModal').classList.add('hidden');document.getElementById('deleteModal').classList.remove('flex');}
+        async function confirmDelete(){
+            if(document.getElementById('delEmail').value.trim()!==currentUser.email)return toast('Email tidak cocok','error');
+            try{const snap=await db.collection('rooms').where('notulen_id','==',currentUser.uid).get();const batch=db.batch();snap.forEach(d=>batch.delete(d.ref));await batch.commit();await db.collection('users').doc(currentUser.uid).delete();await currentUser.delete();toast('Akun dihapus','info');hideDeleteModal();}
+            catch(e){toast(e.message,'error');}
+        }
+        async function loadActivity(){
+            const el=document.getElementById('activityList');
+            el.innerHTML='<div class="text-center py-6 text-muted text-xs">Memuat...</div>';
+            try{
+                const snap=await db.collection('rooms').orderBy('createdAt','desc').get();
+                const rooms=snap.docs.filter(d=>{const data=d.data();return data.notulen_id===currentUser.uid||(data.participants&&data.participants.includes(currentUser.uid));});
+                if(!rooms.length){el.innerHTML='<div class="text-center py-8 text-muted text-xs">Belum ada riwayat</div>';return;}
+                const tm={rapat_dosen:'Rapat Dosen',bimbingan_skripsi:'Bimbingan',rapat_prodi:'Rapat Prodi',rapat_fakultas:'Rapat Fakultas',riset_pengabdian:'Riset',koordinasi_akademik:'Koordinasi',lainnya:'Lainnya'};
+                el.innerHTML=rooms.map(r=>{const d=r.data();d.id=r.id;const ia=d.status==='aktif';return`<div class="flex items-center justify-between p-3 bg-gray-50 rounded-xl hover:bg-gray-100 transition-all cursor-pointer" onclick="${ia?`enterRoom('${d.id}')`:`viewPastRoom('${d.id}')`}"><div class="flex-1 min-w-0 mr-2"><p class="text-xs font-semibold text-gray-900 truncate">${d.title||'Rapat'}</p><div class="flex items-center gap-1.5 text-[10px] text-muted mt-0.5"><span>${d.notulen_id===currentUser.uid?'Notulen':'Peserta'}</span><span>•</span><span>${fmtD(d.createdAt)}</span></div></div><span class="px-2 py-1 ${ia?'badge-green':'badge-gray'} text-[9px] rounded-lg font-semibold flex-shrink-0">${ia?'Aktif':'Selesai'}</span></div>`;}).join('');
+            }catch(e){el.innerHTML='<p class="text-xs text-muted text-center py-6">Gagal memuat</p>';}
+        }
+
+        // ===================== DASHBOARD =====================
+        function loadDashboard(){loadRooms();loadStats();}
+        async function loadStats(){
+            try{const snap=await db.collection('rooms').get();let ac=0,tc=0,tp=0,nc=0;const today=new Date();today.setHours(0,0,0,0);snap.forEach(r=>{const d=r.data();if(d.status==='aktif'){ac++;if(d.participants)tp+=d.participants.length;if(d.notes&&d.notes.length>0)nc++;}if(d.createdAt&&d.createdAt.toDate()>=today)tc++;});document.getElementById('statActive').textContent=ac;document.getElementById('statToday').textContent=tc;document.getElementById('statParticipants').textContent=tp;document.getElementById('statNotes').textContent=nc;}
+            catch(e){}
+        }
+        function handleSearch(q){searchQuery=q.toLowerCase();renderRooms();}
+        function setFilter(type){
+            activeFilter=type;
+            document.querySelectorAll('.filter-btn').forEach(b=>{b.classList.remove('bg-gray-900','text-white');b.classList.add('bg-white','border','border-gray-200','text-gray-600');});
+            const map={all:'fAll',rapat_dosen:'fRapatDosen',bimbingan_skripsi:'fBimbingan',rapat_prodi:'fProdi',riset_pengabdian:'fRiset'};
+            const btn=document.getElementById(map[type]);
+            if(btn){btn.classList.add('bg-gray-900','text-white');btn.classList.remove('bg-white','border','border-gray-200','text-gray-600');}
+            renderRooms();
+        }
+        function loadRooms(){
+            if(unsubRoom)unsubRoom();
+            unsubRoom=db.collection('rooms').orderBy('createdAt','desc').onSnapshot(snap=>{roomsCache=[];snap.forEach(r=>{const d=r.data();d.id=r.id;roomsCache.push(d);});renderRooms();},err=>{console.error(err);});
+        }
+        function renderRooms(){
+            const tm={rapat_dosen:'Rapat Dosen',bimbingan_skripsi:'Bimbingan Skripsi',rapat_prodi:'Rapat Prodi',rapat_fakultas:'Rapat Fakultas',riset_pengabdian:'Riset & Pengabdian',koordinasi_akademik:'Koordinasi Akademik',lainnya:'Lainnya'};
+            let filtered=activeFilter==='all'?roomsCache:roomsCache.filter(r=>r.jenis_rapat===activeFilter);
+            if(searchQuery) filtered=filtered.filter(r=>(r.title||'').toLowerCase().includes(searchQuery));
+            const act=filtered.filter(r=>r.status==='aktif'),rec=filtered.filter(r=>r.status!=='aktif');
+            const acEl=document.getElementById('activeCount');if(acEl)acEl.textContent=act.length;
+            const rcEl=document.getElementById('recentCount');if(rcEl)rcEl.textContent=rec.length;
+            const al=document.getElementById('activeRoomsList');
+            if(!act.length){
+                al.innerHTML=searchQuery?`<div class="col-span-full empty-state"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg><p>Tidak ditemukan rapat dengan kata kunci "${searchQuery}"</p></div>`
+                :`<div class="col-span-full empty-state"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg><p>Belum ada rapat aktif</p><p class="mt-1 text-xs">Buat rapat baru untuk memulai</p></div>`;
+            }else{
+                al.innerHTML=act.map(r=>{const io=r.notulen_id===currentUser?.uid;return`<div class="card card-hover overflow-hidden cursor-pointer" onclick="${io?`enterRoom('${r.id}')`:`showRoomDetail('${r.id}')`}"><div class="p-4"><div class="flex items-start justify-between mb-3"><div class="flex-1 min-w-0 pr-2"><h3 class="font-semibold text-gray-900 text-sm leading-snug line-clamp-2">${r.title||'Rapat'}</h3><span class="inline-block px-2 py-0.5 bg-brand/10 text-brand text-[10px] font-medium rounded-md mt-1.5">${tm[r.jenis_rapat]||'Umum'}</span></div><span class="live-dot mt-1.5"></span></div><div class="flex items-center gap-3 text-[11px] text-muted mb-3"><span>${r.notulen_name||'?'}</span>${r.lokasi?`<span>${r.lokasi}</span>`:''}</div><div class="flex items-center justify-between text-[10px] text-muted"><span>${fmtD(r.createdAt)}</span><span>👥 ${(r.participants?.length||0)+1}</span></div></div><div class="px-4 py-2.5 bg-gray-50 border-t border-gray-100"><div class="w-full py-1.5 ${io?'bg-brand text-white':'bg-gray-200 text-gray-600'} font-medium rounded-lg text-[10px] text-center">${io?'Masuk (Notulen)':'Lihat Detail'}</div></div></div>`;}).join('');
+            }
+            const rl=document.getElementById('recentRoomsList');
+            rl.innerHTML=rec.length?rec.map(r=>`<div class="card card-hover overflow-hidden cursor-pointer" onclick="viewPastRoom('${r.id}')"><div class="p-4 flex items-center justify-between"><div class="flex-1 min-w-0 mr-3"><h3 class="font-semibold text-gray-900 text-sm truncate">${r.title||'Rapat'}</h3><div class="flex items-center gap-1.5 text-[10px] text-muted mt-0.5"><span>${r.notulen_name||'?'}</span><span>•</span><span>${fmtD(r.createdAt)}</span>${r.lokasi?`<span>•</span><span>${r.lokasi}</span>`:''}</div></div><span class="px-2 py-1 bg-gray-100 text-gray-500 text-[9px] rounded-lg font-medium flex-shrink-0">${tm[r.jenis_rapat]||'Umum'}</span></div></div>`).join(''):'<p class="text-center text-muted py-8 text-xs">Tidak ada riwayat</p>';
+        }
+
+        // ===================== ROOM DETAIL =====================
+        function showRoomDetail(roomId){
+            const r=roomsCache.find(x=>x.id===roomId);
+            if(!r)return;
+            const tm={rapat_dosen:'Rapat Dosen',bimbingan_skripsi:'Bimbingan Skripsi',rapat_prodi:'Rapat Prodi',rapat_fakultas:'Rapat Fakultas',riset_pengabdian:'Riset & Pengabdian',koordinasi_akademik:'Koordinasi Akademik',lainnya:'Lainnya'};
+            document.getElementById('rdContent').innerHTML=`
+                <div class="text-center mb-5">
+                    <h3 class="text-lg font-semibold text-gray-900">${r.title||'Rapat'}</h3>
+                    <span class="badge badge-blue mt-2">${tm[r.jenis_rapat]||'Umum'}</span>
+                </div>
+                <div class="space-y-3 text-sm mb-5">
+                    <div class="flex justify-between py-2 border-b border-gray-100"><span class="text-muted">Notulen</span><span class="font-medium text-gray-900">${r.notulen_name||'-'}</span></div>
+                    <div class="flex justify-between py-2 border-b border-gray-100"><span class="text-muted">Lokasi</span><span class="font-medium text-gray-900">${r.lokasi||'-'}</span></div>
+                    <div class="flex justify-between py-2 border-b border-gray-100"><span class="text-muted">Peserta</span><span class="font-medium text-gray-900">${(r.participants?.length||0)+1} orang</span></div>
+                    <div class="flex justify-between py-2 border-b border-gray-100"><span class="text-muted">Mulai</span><span class="font-medium text-gray-900">${fmtFull(r.createdAt)}</span></div>
+                    ${r.agenda?`<div class="py-2"><span class="text-muted block mb-1">Agenda</span><p class="text-gray-700 text-xs leading-relaxed">${r.agenda}</p></div>`:''}
+                </div>
+                <div class="flex gap-3">
+                    <button onclick="hideRoomDetail()" class="btn btn-outline flex-1 btn-sm">Tutup</button>
+                    <button onclick="hideRoomDetail();openPinModal('${r.id}')" class="btn btn-primary flex-1 btn-sm">Masukkan PIN</button>
+                </div>`;
+            document.getElementById('roomDetailModal').classList.remove('hidden');
+            document.getElementById('roomDetailModal').classList.add('flex');
+        }
+        function hideRoomDetail(){document.getElementById('roomDetailModal').classList.add('hidden');document.getElementById('roomDetailModal').classList.remove('flex');}
+
+        // ===================== PIN MODAL =====================
+        function openPinModal(roomId){
+            pendingPinRoom=roomId;
+            document.getElementById('pinModal').classList.remove('hidden');document.getElementById('pinModal').classList.add('flex');
+            for(let i=0;i<6;i++){const el=document.getElementById('p'+i);el.value='';el.classList.remove('filled','error');}
+            document.getElementById('pinError').classList.add('hidden');
+            setTimeout(()=>document.getElementById('p0').focus(),100);
+        }
+        function hidePinModal(){document.getElementById('pinModal').classList.add('hidden');document.getElementById('pinModal').classList.remove('flex');pendingPinRoom=null;}
+        function pinInput(i){const el=document.getElementById('p'+i);el.classList.remove('error');const v=el.value.replace(/[^0-9]/g,'');el.value=v;el.classList.toggle('filled',v.length===1);if(v.length===1&&i<5)document.getElementById('p'+(i+1)).focus();}
+        function pinKey(e,i){if(e.key==='Backspace'&&!e.target.value&&i>0){const prev=document.getElementById('p'+(i-1));prev.focus();prev.value='';prev.classList.remove('filled');}}
+        async function submitPin(){
+            if(!pendingPinRoom)return;
+            let pin='';for(let i=0;i<6;i++){pin+=document.getElementById('p'+i).value;document.getElementById('p'+i).classList.remove('error');}
+            if(pin.length!==6){document.getElementById('pinError').textContent='Masukkan 6 digit PIN';document.getElementById('pinError').classList.remove('hidden');return;}
+            setLoad('pinBtnText','pinSpinner',true);
+            try{const doc=await db.collection('rooms').doc(pendingPinRoom).get();if(!doc.exists||doc.data().pin!==pin){for(let i=0;i<6;i++)document.getElementById('p'+i).classList.add('error');document.getElementById('pinError').textContent='PIN salah. Coba lagi.';document.getElementById('pinError').classList.remove('hidden');setLoad('pinBtnText','pinSpinner',false);return;}
+            const r=doc.data();r.id=pendingPinRoom;if(!r.participants?.includes(currentUser.uid)){await db.collection('rooms').doc(r.id).update({participants:[...(r.participants||[]),currentUser.uid]});await db.collection('attendance').doc(r.id+'_'+currentUser.uid).set({roomId:r.id,userId:currentUser.uid,name:window.userData?.name||'',role:'peserta',joinedAt:firebase.firestore.FieldValue.serverTimestamp()});}
+            hidePinModal();toast('Berhasil masuk!','success');enterRoom(r.id);}
+            catch(e){document.getElementById('pinError').textContent=e.message;document.getElementById('pinError').classList.remove('hidden');}
+            setLoad('pinBtnText','pinSpinner',false);
+        }
+
+        // ===================== CREATE MODAL =====================
+        function openCreateModal(){document.getElementById('createModal').classList.remove('hidden');document.getElementById('createModal').classList.add('flex');document.getElementById('cTitle').value='';document.getElementById('cAgenda').value='';document.getElementById('cLoc').value='';setTimeout(()=>document.getElementById('cTitle').focus(),100);}
+        function hideCreateModal(){document.getElementById('createModal').classList.add('hidden');document.getElementById('createModal').classList.remove('flex');}
+        async function submitCreate(){
+            const title=document.getElementById('cTitle').value.trim(),agenda=document.getElementById('cAgenda').value.trim(),type=document.getElementById('cType').value,loc=document.getElementById('cLoc').value.trim();
+            if(!title)return toast('Judul rapat harus diisi','error');
+            if(!window.userData?.name)return toast('Data pengguna tidak lengkap','error');
+            setLoad('cBtnText','cSpinner',true);
+            try{const pin=genPin();const ref=await db.collection('rooms').add({title,agenda,jenis_rapat:type,lokasi:loc,notulen_id:currentUser.uid,notulen_name:window.userData.name,pin,status:'aktif',notes:'',participants:[],createdAt:firebase.firestore.FieldValue.serverTimestamp()});await db.collection('attendance').doc(ref.id).set({roomId:ref.id,userId:currentUser.uid,name:window.userData.name,role:'notulen',joinedAt:firebase.firestore.FieldValue.serverTimestamp()});toast('Rapat dibuat! PIN: '+pin,'success');hideCreateModal();enterRoom(ref.id);}
+            catch(e){toast(e.message,'error');}
+            setLoad('cBtnText','cSpinner',false);
+        }
+
+        // ===================== DELETE ROOM =====================
+        function showDeleteRoomModal(){
+            if(!currentRoomId)return;
+            const title=document.getElementById('rTitle').textContent||'rapat ini';
+            document.getElementById('deleteRoomTitle').textContent=title;
+            document.getElementById('deleteRoomModal').classList.remove('hidden');
+            document.getElementById('deleteRoomModal').classList.add('flex');
+        }
+        function hideDeleteRoomModal(){
+            document.getElementById('deleteRoomModal').classList.add('hidden');
+            document.getElementById('deleteRoomModal').classList.remove('flex');
+        }
+        async function confirmDeleteRoom(){
+            if(!currentRoomId)return;
+            setLoad('deleteRoomBtnText','deleteRoomSpinner',true);
+            try{
+                const attSnap=await db.collection('attendance').where('roomId','==',currentRoomId).get();
+                const batch=db.batch();
+                attSnap.forEach(doc=>batch.delete(doc.ref));
+                batch.delete(db.collection('rooms').doc(currentRoomId));
+                await batch.commit();
+                toast('Rapat berhasil dihapus!','success');
+                hideDeleteRoomModal();
+                currentRoomId=null;isNotulen=false;hasUnsaved=false;
+                if(timerInterval)clearInterval(timerInterval);
+                if(unsubRoom)unsubRoom();
+                if(unsubAtt)unsubAtt();
+                showView('dashboardView');
+                loadDashboard();
+            }catch(e){
+                toast('Gagal menghapus rapat: '+e.message,'error');
+            }
+            setLoad('deleteRoomBtnText','deleteRoomSpinner',false);
+        }
+
+        // ===================== ROOM =====================
+        async function enterRoom(rid){
+            currentRoomId=rid;hasUnsaved=false;
+            const doc=await db.collection('rooms').doc(rid).get();
+            if(!doc.exists)return toast('Rapat tidak ditemukan','error');
+            const r=doc.data();r.id=doc.id;if(r.status!=='aktif')return toast('Rapat sudah berakhir','warning');
+            isNotulen=r.notulen_id===currentUser.uid;
+            const tm={rapat_dosen:'Rapat Dosen',bimbingan_skripsi:'Bimbingan Skripsi',rapat_prodi:'Rapat Prodi',rapat_fakultas:'Rapat Fakultas',riset_pengabdian:'Riset & Pengabdian',koordinasi_akademik:'Koordinasi Akademik',lainnya:'Lainnya'};
+            document.getElementById('rTitle').textContent=r.title;document.getElementById('rNotulen').textContent=r.notulen_name;
+            document.getElementById('rType').textContent=tm[r.jenis_rapat]||'Umum';document.getElementById('rLoc').textContent=r.lokasi||'-';
+            document.getElementById('rStart').textContent=fmtFull(r.createdAt);document.getElementById('rAgenda').textContent=r.agenda||'-';
+            document.getElementById('rAgendaBlock').classList.toggle('hidden',!r.agenda);document.getElementById('rTimer').textContent='00:00:00';document.getElementById('rDuration').textContent='';
+            window._meetStart=r.createdAt.toDate().getTime();if(timerInterval)clearInterval(timerInterval);timerInterval=setInterval(updateTimer,1000);updateTimer();
+            if(isNotulen){
+                document.getElementById('rPinBox').classList.remove('hidden');document.getElementById('rPin').textContent=r.pin;
+                document.getElementById('rEndBtn').classList.remove('hidden');
+                document.getElementById('rDeleteBtn').classList.remove('hidden');
+                document.getElementById('notulenMode').classList.remove('hidden');document.getElementById('viewerMode').classList.add('hidden');
+                document.getElementById('rExportBox').classList.remove('hidden');
+                const editor=document.getElementById('editor');editor.innerHTML=r.notes||'';lastSavedContent=editor.innerHTML;
+                updateCounts();editor.oninput=()=>{updateCounts();markUnsaved();debouncedSave();};
+            }else{
+                document.getElementById('rPinBox').classList.add('hidden');document.getElementById('rEndBtn').classList.add('hidden');
+                document.getElementById('rDeleteBtn').classList.add('hidden');
+                document.getElementById('notulenMode').classList.add('hidden');document.getElementById('viewerMode').classList.remove('hidden');
+                document.getElementById('rExportBox').classList.add('hidden');
+                document.getElementById('viewerNotes').innerHTML=r.notes||'<p class="text-muted italic">Belum ada notulensi...</p>';
+            }
+            showView('roomView');setupListeners(rid);
+        }
+        function setupListeners(rid){
+            if(unsubRoom)unsubRoom();
+            unsubRoom=db.collection('rooms').doc(rid).onSnapshot(doc=>{
+                if(!doc.exists){toast('Rapat telah dihapus','warning');leaveRoom();return;}
+                const r=doc.data();
+                if(r.status!=='aktif'){toast('Rapat telah diakhiri','warning');leaveRoom();return;}
+                if(!isNotulen)document.getElementById('viewerNotes').innerHTML=r.notes||'<p class="text-muted italic">Belum ada notulensi...</p>';
+            });
+            if(unsubAtt)unsubAtt();
+            unsubAtt=db.collection('attendance').where('roomId','==',rid).orderBy('joinedAt','asc').onSnapshot(snap=>{
+                // REVISI 4: Notulen juga terdaftar sebagai peserta dengan tag "Notulen"
+                document.getElementById('rPCount').textContent=snap.size;
+                const list=document.getElementById('rPList');
+                list.innerHTML='';
+                snap.forEach(d=>{
+                    const a=d.data();
+                    const ir=a.role==='notulen';
+                    const name=a.name||'Peserta';
+                    const ini=initials(name);
+                    list.innerHTML+=`<div class="flex items-center gap-2.5 p-2 rounded-xl hover:bg-gray-50 transition-colors">
+                        <div class="w-7 h-7 ${ir?'bg-brand text-white':'bg-gray-200 text-gray-600'} rounded-full flex items-center justify-center text-[9px] font-bold flex-shrink-0">${ini}</div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-[10px] font-semibold text-gray-900 truncate">${name}</p>
+                            <p class="text-[9px] text-muted">${fmtT(a.joinedAt)}</p>
+                        </div>
+                        ${ir?'<span class="px-1.5 py-0.5 bg-brand text-white text-[8px] rounded-md font-semibold flex-shrink-0">Notulen</span>'
+                            :'<span class="px-1.5 py-0.5 bg-emerald-100 text-emerald-700 text-[8px] rounded-md font-semibold flex-shrink-0">Hadir</span>'}
+                    </div>`;
+                });
+            });
+        }
+        function updateCounts(){const editor=document.getElementById('editor');const text=editor.innerText||'';document.getElementById('charCount').textContent=text.length+' karakter';document.getElementById('wordCount').textContent=(text.trim()?text.trim().split(/\s+/).length:0)+' kata';}
+        function markUnsaved(){hasUnsaved=true;document.getElementById('saveInd').innerHTML='<span class="w-1.5 h-1.5 bg-amber-500 rounded-full"></span> Belum tersimpan';}
+        function debouncedSave(){
+            if(saveTimer)clearTimeout(saveTimer);
+            saveTimer=setTimeout(async()=>{
+                const html=document.getElementById('editor').innerHTML;
+                try{await db.collection('rooms').doc(currentRoomId).update({notes:html});lastSavedContent=html;hasUnsaved=false;document.getElementById('saveInd').innerHTML='<span class="w-1.5 h-1.5 bg-emerald-500 rounded-full"></span> Tersimpan';}
+                catch(e){document.getElementById('saveInd').innerHTML='<span class="w-1.5 h-1.5 bg-red-500 rounded-full"></span> Gagal';}
+            },800);
+        }
+        function exportNotes(){
+            const text=document.getElementById('editor').innerText||'Belum ada notulensi.';
+            const title=document.getElementById('rTitle').textContent||'Notulensi';
+            const blob=new Blob([`NOTULENSI RAPAT\n${'='.repeat(40)}\n\nJudul: ${title}\nTanggal: ${new Date().toLocaleDateString('id-ID',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}\nNotulen: ${window.userData?.name||'-'}\n\n${'─'.repeat(40)}\n\n${text}\n\n${'─'.repeat(40)}\nDiexport dari ERapatUnsam\n`],{type:'text/plain;charset=utf-8;'});
+            const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=`notulensi_${title.replace(/\s+/g,'_')}_${new Date().toISOString().slice(0,10)}.txt`;a.click();URL.revokeObjectURL(url);
+            toast('Notulen didownload!','success');
+        }
+        function copyRoomInfo(){
+            const title=document.getElementById('rTitle').textContent;
+            const type=document.getElementById('rType').textContent;
+            const loc=document.getElementById('rLoc').textContent;
+            const notulen=document.getElementById('rNotulen').textContent;
+            const start=document.getElementById('rStart').textContent;
+            const agenda=document.getElementById('rAgenda').textContent;
+            const text=`📋 Info Rapat\n\nJudul: ${title}\nJenis: ${type}\nLokasi: ${loc}\nNotulen: ${notulen}\nMulai: ${start}\n${agenda?`Agenda:\n${agenda}`:''}`;
+            navigator.clipboard.writeText(text).then(()=>toast('Info rapat disalin!','success'));
+        }
+        function promptLeave(){
+            if(isNotulen&&hasUnsaved){
+                document.getElementById('leaveMsg').textContent='Ada perubahan belum tersimpan. Keluar dan simpan?';
+            }else{
+                document.getElementById('leaveMsg').textContent='Anda akan keluar dari rapat ini.';
+            }
+            document.getElementById('leaveModal').classList.remove('hidden');
+            document.getElementById('leaveModal').classList.add('flex');
+        }
+        function hideLeaveModal(){document.getElementById('leaveModal').classList.add('hidden');document.getElementById('leaveModal').classList.remove('flex');}
+        async function confirmLeave(){
+            hideLeaveModal();
+            if(isNotulen&&hasUnsaved){
+                const html=document.getElementById('editor').innerHTML;
+                await db.collection('rooms').doc(currentRoomId).update({notes:html});
+            }
+            leaveRoom();
+        }
+        function leaveRoom(){currentRoomId=null;isNotulen=false;hasUnsaved=false;if(timerInterval)clearInterval(timerInterval);if(unsubRoom)unsubRoom();if(unsubAtt)unsubAtt();showView('dashboardView');loadDashboard();}
+        async function cleanup(){if(unsubRoom)unsubRoom();if(unsubAtt)unsubAtt();if(timerInterval)clearInterval(timerInterval);if(isNotulen&&currentRoomId){try{const html=document.getElementById('editor')?.innerHTML||'';await db.collection('rooms').doc(currentRoomId).update({notes:html});}catch(e){}}currentRoomId=null;isNotulen=false;hasUnsaved=false;}
+        function showEndModal(){document.getElementById('endModal').classList.remove('hidden');document.getElementById('endModal').classList.add('flex');}
+        function hideEndModal(){document.getElementById('endModal').classList.add('hidden');document.getElementById('endModal').classList.remove('flex');}
+        async function confirmEnd(){hideEndModal();try{if(isNotulen){const html=document.getElementById('editor')?.innerHTML||'';await db.collection('rooms').doc(currentRoomId).update({notes:html,status:'selesai'});}toast('Rapat diakhiri','info');await cleanup();showView('dashboardView');loadDashboard();}catch(e){toast(e.message,'error');}}
+        async function viewPastRoom(rid){
+            const doc=await db.collection('rooms').doc(rid).get();
+            if(!doc.exists)return toast('Rapat tidak ditemukan','error');
+            const r=doc.data();r.id=doc.id;currentRoomId=rid;isNotulen=false;
+            const tm={rapat_dosen:'Rapat Dosen',bimbingan_skripsi:'Bimbingan Skripsi',rapat_prodi:'Rapat Prodi',rapat_fakultas:'Rapat Fakultas',riset_pengabdian:'Riset & Pengabdian',koordinasi_akademik:'Koordinasi Akademik',lainnya:'Lainnya'};
+            document.getElementById('rTitle').textContent=r.title;document.getElementById('rNotulen').textContent=r.notulen_name;
+            document.getElementById('rType').textContent=tm[r.jenis_rapat]||'Umum';document.getElementById('rLoc').textContent=r.lokasi||'-';
+            document.getElementById('rStart').textContent=fmtFull(r.createdAt);document.getElementById('rAgenda').textContent=r.agenda||'-';
+            document.getElementById('rAgendaBlock').classList.toggle('hidden',!r.agenda);
+            document.getElementById('rPinBox').classList.add('hidden');document.getElementById('rEndBtn').classList.add('hidden');
+            document.getElementById('rDeleteBtn').classList.add('hidden');
+            document.getElementById('notulenMode').classList.add('hidden');document.getElementById('viewerMode').classList.remove('hidden');
+            document.getElementById('rExportBox').classList.add('hidden');
+            document.getElementById('rTimer').textContent='00:00:00';document.getElementById('rDuration').textContent='';
+            document.getElementById('viewerNotes').innerHTML=r.notes||'<p class="text-muted italic">Tidak ada notulensi.</p>';
+            if(timerInterval)clearInterval(timerInterval);if(unsubAtt)unsubAtt();
+            unsubAtt=db.collection('attendance').where('roomId','==',rid).orderBy('joinedAt','asc').onSnapshot(snap=>{document.getElementById('rPCount').textContent=snap.size;});
+            showView('roomView');
+        }
+        function copyPin(){navigator.clipboard.writeText(document.getElementById('rPin').textContent).then(()=>toast('PIN disalin!','success'));}
+        async function exportCSV(){if(!currentRoomId)return;try{const snap=await db.collection('attendance').where('roomId','==',currentRoomId).get();const roomSnap=await db.collection('rooms').doc(currentRoomId).get();const title=roomSnap.data().title;let csv='No,NIDN/NIP,Nama,Jabatan,Fakultas,Prodi,Waktu,Role\n';let idx=1;for(const d of snap.docs){const a=d.data();let ud={nidn:'-',name:a.name||'-',jabatan:'-',fakultas:'-',prodi:'-'};if(a.userId){const uSnap=await db.collection('users').doc(a.userId).get();if(uSnap.exists)ud={...ud,...uSnap.data()};}csv+=`${idx},"${ud.nidn||'-'}","${ud.name||'-'}","${ud.jabatan||'-'}","${ud.fakultas||'-'}","${ud.prodi||'-'}","${fmtT(a.joinedAt)}","${a.role}"\n`;idx++;}const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=`daftar_hadir_${title.replace(/\s+/g,'_')}_${new Date().toISOString().slice(0,10)}.csv`;a.click();URL.revokeObjectURL(url);toast('Daftar hadir di-export!','success');}catch(e){toast(e.message,'error');}}
+        document.addEventListener('DOMContentLoaded',()=>{document.getElementById('loginPassword')?.addEventListener('keydown',e=>{if(e.key==='Enter')handleLogin();});});
+    </script>
+</body>
+</html>
+
