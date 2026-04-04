@@ -51,7 +51,7 @@
         .editor-wrapper { background:#fff; border:1.5px solid #e5e7eb; border-radius:14px; overflow:hidden; transition:border-color 0.2s, box-shadow 0.2s; height: calc(100vh - 180px); display: flex; flex-direction: column; }
         .editor-wrapper:focus-within { border-color:#2563eb; box-shadow:0 0 0 4px rgba(37,99,235,0.08); }
         .note-toolbar { background:#f9fafb; border-bottom:1px solid #e5e7eb; padding:6px 8px; display:flex; flex-wrap:wrap; gap:4px; align-items:center; }
-        .tool-btn { padding:5px 7px; border-radius:6px; font-size:13px; font-weight:500; transition:all 0.12s; min-width:28px; min-height:28px; display:inline-flex; align-items:center; justify-content:center; color:#4b5563; cursor:pointer; border:none; background:transparent; }
+        .tool-btn { padding:5px 7px; border-radius:6px; font-size:13px; font-weight:500; transition:all 0.12s; min-width:28px; min-height:28px; display:inline-flex; align-items:center; justify-content:center; color:#4b5563; cursor:pointer; border:none; background:transparent; user-select:none; }
         .tool-btn:hover { background:#e5e7eb; color:#111827; }
         .tool-btn.active { background:#2563eb; color:#fff; }
         .tool-sep { width:1px; height:20px; background:#d1d5db; margin:0 3px; }
@@ -97,8 +97,6 @@
         .calendar-day.has-event::after { content:''; position:absolute; bottom:2px; width:4px; height:4px; background:#2563eb; border-radius:50%; }
         .calendar-day.today { @apply bg-brand text-white; }
         .calendar-day.selected { @apply ring-2 ring-brand ring-offset-2; }
-        
-        /* Focus Mode Styles */
         .focus-mode .sidebar-col { display: none; }
         .focus-mode .editor-wrapper { height: calc(100vh - 140px); }
     </style>
@@ -403,9 +401,8 @@
         </div>
     </div>
 
-    <!-- ============ ROOM VIEW (UPDATED) ============ -->
+    <!-- ============ ROOM VIEW (FIXED EDITOR) ============ -->
     <div id="roomView" class="view min-h-screen flex-col bg-surface">
-        <!-- Header -->
         <div class="bg-white/80 backdrop-blur-xl border-b border-gray-100 sticky top-0 z-40">
             <div class="max-w-7xl mx-auto px-4 sm:px-5 py-3">
                 <div class="flex items-center justify-between">
@@ -431,12 +428,10 @@
             </div>
         </div>
         
-        <!-- Main Content -->
         <div class="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-5 py-4 safe-b grid grid-cols-1 lg:grid-cols-4 gap-4 transition-all" id="roomGrid">
             <div class="lg:col-span-3 flex flex-col h-full">
                 <div id="notulenMode" class="hidden flex-col h-full">
                     <div class="editor-wrapper">
-                        <!-- Improved Toolbar -->
                         <div class="note-toolbar">
                             <div class="flex items-center gap-1 flex-wrap flex-1">
                                 <select id="fontSizeSelect" onchange="applyFontSizePt(this.value)" class="font-size-select w-16" title="Ukuran Font (pt)">
@@ -450,24 +445,24 @@
                                     <option value="24">24pt</option>
                                 </select>
                                 <div class="tool-sep"></div>
-                                <button onclick="fmt('bold')" class="tool-btn font-bold" title="Bold">B</button>
-                                <button onclick="fmt('italic')" class="tool-btn italic" title="Italic">I</button>
-                                <button onclick="fmt('underline')" class="tool-btn underline" title="Underline">U</button>
-                                <button onclick="fmt('strikeThrough')" class="tool-btn" title="Strikethrough"><s>S</s></button>
+                                <button onclick="fmt('bold')" onmousedown="event.preventDefault()" class="tool-btn font-bold" title="Bold">B</button>
+                                <button onclick="fmt('italic')" onmousedown="event.preventDefault()" class="tool-btn italic" title="Italic">I</button>
+                                <button onclick="fmt('underline')" onmousedown="event.preventDefault()" class="tool-btn underline" title="Underline">U</button>
+                                <button onclick="fmt('strikeThrough')" onmousedown="event.preventDefault()" class="tool-btn" title="Strikethrough"><s>S</s></button>
                                 <div class="tool-sep"></div>
-                                <button onclick="fmt('justifyLeft')" class="tool-btn text-xs" title="Rata Kiri">≡←</button>
-                                <button onclick="fmt('justifyCenter')" class="tool-btn text-xs" title="Rata Tengah">≡</button>
-                                <button onclick="fmt('justifyRight')" class="tool-btn text-xs" title="Rata Kanan">≡→</button>
+                                <button onclick="fmt('justifyLeft')" onmousedown="event.preventDefault()" class="tool-btn text-xs" title="Rata Kiri">≡←</button>
+                                <button onclick="fmt('justifyCenter')" onmousedown="event.preventDefault()" class="tool-btn text-xs" title="Rata Tengah">≡</button>
+                                <button onclick="fmt('justifyRight')" onmousedown="event.preventDefault()" class="tool-btn text-xs" title="Rata Kanan">≡→</button>
                                 <div class="tool-sep"></div>
-                                <button onclick="fmt('insertUnorderedList')" class="tool-btn text-xs" title="Bullet List">• List</button>
-                                <button onclick="fmt('insertOrderedList')" class="tool-btn text-xs" title="Numbered List">1. List</button>
+                                <button onclick="fmt('insertUnorderedList')" onmousedown="event.preventDefault()" class="tool-btn text-xs" title="Bullet List">• List</button>
+                                <button onclick="fmt('insertOrderedList')" onmousedown="event.preventDefault()" class="tool-btn text-xs" title="Numbered List">1. List</button>
                                 <div class="hidden sm:block tool-sep"></div>
-                                <button onclick="fmt('formatBlock','<h2>')" class="tool-btn text-xs font-bold" title="Heading">H</button>
-                                <input type="color" id="textColor" value="#000000" class="color-input hidden sm:block" onchange="applyForeColor(this.value)" title="Warna Teks">
+                                <button onclick="fmt('formatBlock','<h2>')" onmousedown="event.preventDefault()" class="tool-btn text-xs font-bold" title="Heading">H</button>
+                                <input type="color" id="textColor" value="#000000" class="color-input hidden sm:block" onchange="applyForeColor(this.value)" title="Warna Teks" onmousedown="event.preventDefault()">
                             </div>
                             <div class="flex items-center gap-2 ml-2">
-                                <button onclick="toggleFocusMode()" id="focusModeBtn" class="tool-btn text-xs" title="Mode Fokus"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path></svg></button>
-                                <button onclick="exportNotes()" class="tool-btn text-xs text-brand" title="Download Notulen"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg></button>
+                                <button onclick="toggleFocusMode()" id="focusModeBtn" class="tool-btn text-xs" title="Mode Fokus" onmousedown="event.preventDefault()"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path></svg></button>
+                                <button onclick="exportNotes()" onmousedown="event.preventDefault()" class="tool-btn text-xs text-brand" title="Download Notulen"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg></button>
                                 <span id="saveInd" class="text-[10px] text-gray-400 flex items-center gap-1"><span class="w-1.5 h-1.5 bg-emerald-500 rounded-full"></span>Tersimpan</span>
                             </div>
                         </div>
@@ -489,7 +484,6 @@
                 </div>
             </div>
             
-            <!-- Sidebar Column (Sticky) -->
             <div class="lg:col-span-1 space-y-4 sidebar-col">
                 <div class="card p-4 sticky top-20">
                     <h3 class="text-xs font-bold text-gray-900 mb-3 flex items-center gap-2">
@@ -553,7 +547,6 @@
     </div>
 
     <script>
-        // ===================== CONFIG =====================
         const firebaseConfig = {
             apiKey:"AIzaSyCBNXmBtTQrPmtZMMuc-x9NVSF16tXT-0U",
             authDomain:"erapatunsam-8c240.firebaseapp.com",
@@ -567,7 +560,6 @@
         const auth = firebase.auth();
         const db = firebase.firestore();
 
-        // ===================== STATE =====================
         let currentUser=null, currentRoomId=null, isNotulen=false;
         let unsubRoom=null, unsubAtt=null;
         let saveTimer=null, timerInterval=null;
@@ -587,7 +579,6 @@
             'fakultas': { type:'rapat_fakultas', title:'Rapat Senat Fakultas', agenda:'1. Laporan Dekan\n2. Evaluasi Kinerja Dosen\n3. Anggaran Fakultas\n4. Kebijakan Akademik' }
         };
 
-        // ===================== UTILS =====================
         function toast(msg, type='success') {
             const c=document.getElementById('toastContainer');
             const colors={success:'bg-gray-900',error:'bg-red-600',info:'bg-brand',warning:'bg-amber-500'};
@@ -613,33 +604,24 @@
             document.getElementById('rDuration').textContent=h>0?`${h}j ${m}m`:`${m}m`;
         }
 
-        // ===================== RICH TEXT FUNCTIONS =====================
         function fmt(cmd, value=null) { document.execCommand(cmd, false, value); document.getElementById('editor').focus(); }
         function applyForeColor(color) { document.execCommand('foreColor', false, color); document.getElementById('editor').focus(); }
         
-        // NEW: Apply Font Size in Point (pt)
+        // FIXED: Robust font size application
         function applyFontSizePt(pt) {
             if(!pt) return;
-            const selection = window.getSelection();
-            if (!selection.rangeCount) return;
-            
-            // Wrap selection in span with font-size pt
-            const range = selection.getRangeAt(0);
-            const span = document.createElement('span');
-            span.style.fontSize = pt + 'pt';
-            
-            try {
-                range.surroundContents(span);
-            } catch(e) {
-                // Fallback for complex selections
-                const frag = range.extractContents();
-                span.appendChild(frag);
-                range.insertNode(span);
-            }
+            document.execCommand('fontSize', false, '7');
+            const fonts = document.querySelectorAll('#editor font[size="7"]');
+            fonts.forEach(el => {
+                const span = document.createElement('span');
+                span.style.fontSize = pt + 'pt';
+                while(el.firstChild) span.appendChild(el.firstChild);
+                el.parentNode.replaceChild(span, el);
+            });
+            document.getElementById('fontSizeSelect').value = "";
             document.getElementById('editor').focus();
         }
 
-        // NEW: Focus Mode Toggle
         function toggleFocusMode() {
             isFocusMode = !isFocusMode;
             document.body.classList.toggle('focus-mode', isFocusMode);
@@ -652,7 +634,6 @@
             }
         }
 
-        // ===================== AUTH =====================
         async function handleLogin(){
             const e=document.getElementById('loginEmail').value.trim(),p=document.getElementById('loginPassword').value;
             if(!e||!p)return toast('Email & password harus diisi','error');
@@ -693,7 +674,6 @@
             }else{currentUser=null;currentRoomId=null;isNotulen=false;window.userData=null;showView('authView');}
         });
 
-        // ===================== QUICK JOIN =====================
         async function handleQuickJoin(){
             const pin = document.getElementById('quickJoinPin').value.trim();
             if(pin.length !== 6) return toast('Masukkan 6 digit PIN','error');
@@ -718,7 +698,6 @@
             document.getElementById('quickJoinPinMobile').value='';
         }
 
-        // ===================== SETTINGS & MASTER =====================
         function showSettings(){
             if(!window.userData)return;
             const u=window.userData;
@@ -789,7 +768,6 @@
             catch(e){toast(e.message,'error');}
         }
 
-        // ===================== DASHBOARD =====================
         function loadDashboard(){loadRooms();loadStats();renderCalendar();}
         async function loadStats(){
             try{const snap=await db.collection('rooms').get();let ac=0,tc=0,tp=0,nc=0;const today=new Date();today.setHours(0,0,0,0);snap.forEach(r=>{const d=r.data();if(d.status==='aktif'){ac++;if(d.participants)tp+=d.participants.length;if(d.notes&&d.notes.length>0)nc++;}if(d.createdAt&&d.createdAt.toDate()>=today)tc++;});document.getElementById('statActive').textContent=ac;document.getElementById('statToday').textContent=tc;document.getElementById('statParticipants').textContent=tp;document.getElementById('statNotes').textContent=nc;}
@@ -1106,7 +1084,6 @@
             }catch(e){toast(e.message,'error');}
         }
 
-        // ===================== ROOM =====================
         async function enterRoom(rid){
             currentRoomId=rid;hasUnsaved=false;
             const doc=await db.collection('rooms').doc(rid).get();
@@ -1120,7 +1097,6 @@
             document.getElementById('rAgendaBlock').classList.toggle('hidden',!r.agenda);document.getElementById('rTimer').textContent='00:00:00';document.getElementById('rDuration').textContent='';
             window._meetStart=r.createdAt.toDate().getTime();if(timerInterval)clearInterval(timerInterval);timerInterval=setInterval(updateTimer,1000);updateTimer();
             
-            // Reset Focus Mode on enter
             isFocusMode = false;
             document.body.classList.remove('focus-mode');
             document.getElementById('focusModeBtn').classList.remove('bg-brand', 'text-white');
@@ -1132,8 +1108,13 @@
                 document.getElementById('rEndBtn').classList.remove('hidden');document.getElementById('rDeleteBtn').classList.remove('hidden');
                 document.getElementById('notulenMode').classList.remove('hidden');document.getElementById('viewerMode').classList.add('hidden');
                 document.getElementById('rExportBox').classList.remove('hidden');
-                const editor=document.getElementById('editor');editor.innerHTML=r.notes||'';lastSavedContent=editor.innerHTML;
-                updateCounts();editor.oninput=()=>{updateCounts();markUnsaved();debouncedSave();};
+                const editor=document.getElementById('editor');
+                editor.innerHTML=r.notes||'';
+                lastSavedContent=editor.innerHTML;
+                // Fix: Ensure editor uses P tags
+                document.execCommand('defaultParagraphSeparator', false, 'p');
+                updateCounts();
+                editor.oninput=()=>{updateCounts();markUnsaved();debouncedSave();};
             }else{
                 document.getElementById('rPinBox').classList.add('hidden');document.getElementById('rEndBtn').classList.add('hidden');
                 document.getElementById('rDeleteBtn').classList.add('hidden');
@@ -1172,10 +1153,16 @@
         function updateCounts(){const editor=document.getElementById('editor');const text=editor.innerText||'';document.getElementById('charCount').textContent=text.length+' karakter';document.getElementById('wordCount').textContent=(text.trim()?text.trim().split(/\s+/).length:0)+' kata';}
         function markUnsaved(){hasUnsaved=true;document.getElementById('saveInd').innerHTML='<span class="w-1.5 h-1.5 bg-amber-500 rounded-full"></span> Belum tersimpan';}
         function debouncedSave(){
+            const currentContent = document.getElementById('editor').innerHTML;
+            if(currentContent === lastSavedContent) return; // FIXED: Prevent redundant saves
             if(saveTimer)clearTimeout(saveTimer);
             saveTimer=setTimeout(async()=>{
-                const html=document.getElementById('editor').innerHTML;
-                try{await db.collection('rooms').doc(currentRoomId).update({notes:html});lastSavedContent=html;hasUnsaved=false;document.getElementById('saveInd').innerHTML='<span class="w-1.5 h-1.5 bg-emerald-500 rounded-full"></span> Tersimpan';}
+                try{
+                    await db.collection('rooms').doc(currentRoomId).update({notes:currentContent});
+                    lastSavedContent=currentContent;
+                    hasUnsaved=false;
+                    document.getElementById('saveInd').innerHTML='<span class="w-1.5 h-1.5 bg-emerald-500 rounded-full"></span> Tersimpan';
+                }
                 catch(e){document.getElementById('saveInd').innerHTML='<span class="w-1.5 h-1.5 bg-red-500 rounded-full"></span> Gagal';}
             },800);
         }
