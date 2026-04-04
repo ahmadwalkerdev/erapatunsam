@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>ERapatUnsam</title>
+    <!-- Library untuk Export PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/fontsource-inter@5.1.1/index.css" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
@@ -90,6 +92,14 @@
         .empty-state p { color:#9ca3af; font-size:13px; }
         .activity-item { padding:8px 0; border-bottom:1px solid #f3f4f6; }
         .activity-item:last-child { border-bottom:none; }
+        
+        /* Calendar Styles */
+        .calendar-day { @apply flex items-center justify-center w-8 h-8 rounded-full text-xs cursor-pointer transition-all; }
+        .calendar-day:hover { @apply bg-gray-100; }
+        .calendar-day.has-event { @apply font-bold; position:relative; }
+        .calendar-day.has-event::after { content:''; position:absolute; bottom:2px; width:4px; height:4px; background:#2563eb; border-radius:50%; }
+        .calendar-day.today { @apply bg-brand text-white; }
+        .calendar-day.selected { @apply ring-2 ring-brand ring-offset-2; }
     </style>
 </head>
 <body>
@@ -146,7 +156,7 @@
                     <div class="hidden sm:block"><h1 class="font-semibold text-gray-900 text-sm">ERapatUnsam</h1><p id="dashWelcome" class="text-[11px] text-muted truncate max-w-[140px]"></p></div>
                 </div>
                 
-                <!-- NEW: Quick Join Input -->
+                <!-- Quick Join Input -->
                 <div class="flex-1 max-w-xs hidden sm:flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-lg px-3 py-1.5 focus-within:border-brand focus-within:ring-2 focus-within:ring-brand/10 transition-all">
                     <svg class="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>
                     <input id="quickJoinPin" type="text" placeholder="Masuk PIN Rapat..." class="bg-transparent border-none text-sm w-full focus:ring-0 placeholder:text-gray-400" maxlength="6" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
@@ -154,12 +164,16 @@
                 </div>
 
                 <div class="flex items-center gap-1 flex-shrink-0">
+                    <!-- NEW: Laporan Button -->
+                    <button onclick="generateReport()" class="p-2 text-gray-400 hover:text-brand hover:bg-brand-light rounded-xl transition-all hidden sm:flex" title="Laporan Bulanan">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                    </button>
                     <button onclick="openCreateModal()" class="btn btn-primary btn-sm"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg><span class="hidden sm:inline">Buat</span></button>
                     <button onclick="showSettings()" class="p-2 text-gray-400 hover:text-gray-700 hover:bg-gray-50 rounded-xl transition-all"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg></button>
                     <button onclick="handleLogout()" class="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg></button>
                 </div>
             </div>
-            <!-- Mobile Quick Join -->
+            <!-- Mobile Quick Join & Report -->
             <div class="sm:hidden px-4 pb-3 flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-lg mx-4 mt-2 px-3 py-2">
                 <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>
                 <input id="quickJoinPinMobile" type="text" placeholder="Masuk PIN Rapat..." class="bg-transparent border-none text-sm w-full focus:ring-0 placeholder:text-gray-400" maxlength="6" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
@@ -175,14 +189,29 @@
                     <div class="card p-3 text-center"><p class="text-[10px] text-muted font-medium">Notulensi</p><p id="statNotes" class="text-lg font-bold text-purple-600 mt-0.5">0</p></div>
                 </div>
 
-                <div class="flex gap-2 mb-5 overflow-x-auto pb-1">
-                    <button onclick="setFilter('all')" id="fAll" class="filter-btn px-3.5 py-1.5 bg-gray-900 text-white text-xs font-medium rounded-lg transition-all whitespace-nowrap flex-shrink-0">Semua</button>
-                    <button onclick="setFilter('rapat_dosen')" id="fRapatDosen" class="filter-btn px-3.5 py-1.5 bg-white border border-gray-200 text-gray-600 text-xs font-medium rounded-lg hover:bg-gray-50 transition-all whitespace-nowrap flex-shrink-0">Rapat Dosen</button>
-                    <button onclick="setFilter('bimbingan_skripsi')" id="fBimbingan" class="filter-btn px-3.5 py-1.5 bg-white border border-gray-200 text-gray-600 text-xs font-medium rounded-lg hover:bg-gray-50 transition-all whitespace-nowrap flex-shrink-0">Bimbingan</button>
-                    <button onclick="setFilter('rapat_prodi')" id="fProdi" class="filter-btn px-3.5 py-1.5 bg-white border border-gray-200 text-gray-600 text-xs font-medium rounded-lg hover:bg-gray-50 transition-all whitespace-nowrap flex-shrink-0">Rapat Prodi</button>
+                <!-- NEW: Advanced Filter & Search Row -->
+                <div class="flex flex-col sm:flex-row gap-3 mb-5 items-center">
+                    <div class="flex-1 w-full relative">
+                        <svg class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                        <input id="searchInput" type="text" placeholder="Cari rapat..." class="input input-sm pl-9 w-full" oninput="handleSearch(this.value)">
+                    </div>
+                    <div class="flex items-center gap-2 w-full sm:w-auto">
+                        <!-- Status Filter -->
+                        <select id="filterStatus" onchange="applyFilters()" class="input input-sm text-xs bg-white border-gray-200">
+                            <option value="all">Semua Status</option>
+                            <option value="aktif">Berlangsung</option>
+                            <option value="selesai">Selesai</option>
+                        </select>
+                        <!-- Role Filter -->
+                        <select id="filterRole" onchange="applyFilters()" class="input input-sm text-xs bg-white border-gray-200">
+                            <option value="all">Semua Peran</option>
+                            <option value="notulen">Saya Notulen</option>
+                            <option value="peserta">Saya Peserta</option>
+                        </select>
+                    </div>
                 </div>
 
-                <!-- NEW: Pinned Rooms Section -->
+                <!-- Pinned Rooms Section -->
                 <div id="pinnedSection" class="hidden mb-6">
                     <div class="flex items-center gap-2 mb-3"><span class="text-yellow-500">⭐</span><h2 class="text-sm font-semibold text-gray-900">Rapat Pilihan</h2></div>
                     <div id="pinnedRoomsList" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"></div>
@@ -194,16 +223,36 @@
                 <div id="recentRoomsList" class="space-y-2"></div>
             </div>
 
-            <!-- NEW: Activity Feed Sidebar -->
+            <!-- Sidebar: Activity Feed & Calendar -->
             <div class="lg:col-span-1 space-y-4">
-                <div class="card p-4 h-[calc(100vh-140px)] overflow-y-auto">
+                <div class="card p-4">
                     <h3 class="text-xs font-semibold text-gray-900 mb-4 flex items-center gap-2">
                         <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                         Aktivitas Terkini
                     </h3>
-                    <div id="activityFeed" class="space-y-1 text-xs text-muted">
+                    <div id="activityFeed" class="space-y-1 text-xs text-muted max-h-48 overflow-y-auto">
                         <div class="text-center py-4 text-gray-400">Menunggu aktivitas...</div>
                     </div>
+                </div>
+
+                <!-- NEW: Mini Calendar Widget -->
+                <div class="card p-4">
+                    <div class="flex items-center justify-between mb-3">
+                        <h3 class="text-xs font-semibold text-gray-900 flex items-center gap-2">
+                            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                            Kalender Rapat
+                        </h3>
+                        <div class="flex items-center gap-1">
+                            <button onclick="changeMonth(-1)" class="p-1 hover:bg-gray-100 rounded text-gray-500"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg></button>
+                            <span id="calendarMonthLabel" class="text-[10px] font-medium w-16 text-center"></span>
+                            <button onclick="changeMonth(1)" class="p-1 hover:bg-gray-100 rounded text-gray-500"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg></button>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-7 gap-1 text-center mb-2">
+                        <div class="text-[9px] font-medium text-gray-400">Mg</div><div class="text-[9px] font-medium text-gray-400">Sn</div><div class="text-[9px] font-medium text-gray-400">Sl</div><div class="text-[9px] font-medium text-gray-400">Rb</div><div class="text-[9px] font-medium text-gray-400">Km</div><div class="text-[9px] font-medium text-gray-400">Jm</div><div class="text-[9px] font-medium text-gray-400">Sb</div>
+                    </div>
+                    <div id="calendarGrid" class="grid grid-cols-7 gap-1 text-center"></div>
+                    <div id="calendarEvents" class="mt-3 space-y-1 text-[10px] text-gray-500 max-h-24 overflow-y-auto"></div>
                 </div>
             </div>
         </main>
@@ -323,8 +372,6 @@
                 <div class="w-12 h-12 bg-emerald-50 rounded-2xl flex items-center justify-center mx-auto mb-3"><svg class="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg></div>
                 <h3 class="text-lg font-semibold text-gray-900">Buat Rapat Baru</h3>
             </div>
-            
-            <!-- NEW: Template Selector -->
             <div class="mb-4 p-3 bg-gray-50 rounded-xl border border-gray-100">
                 <p class="text-xs font-semibold text-gray-500 mb-2">⚡ Template Cepat</p>
                 <div class="grid grid-cols-3 gap-2">
@@ -333,7 +380,6 @@
                     <button onclick="applyTemplate('fakultas')" class="text-[10px] bg-white border border-gray-200 hover:border-brand hover:text-brand rounded-lg py-2 transition-all">Rapat Fakultas</button>
                 </div>
             </div>
-
             <div class="space-y-3.5">
                 <div><label class="block text-xs font-medium text-gray-500 mb-1">Judul Rapat</label><input id="cTitle" class="input" placeholder="Contoh: Rapat Koordinasi Prodi"></div>
                 <div class="grid grid-cols-2 gap-3">
@@ -499,6 +545,12 @@
         let roomsCache=[];
         let pendingPinRoom=null;
         let hasUnsaved=false, lastSavedContent='';
+        
+        // New State for Filters & Calendar
+        let currentStatusFilter = 'all';
+        let currentRoleFilter = 'all';
+        let currentCalendarDate = new Date();
+        let selectedCalendarDate = null;
 
         // Templates Data
         const templates = {
@@ -674,19 +726,16 @@
             catch(e){toast(e.message,'error');}
         }
 
-        // ===================== DASHBOARD =====================
-        function loadDashboard(){loadRooms();loadStats();}
+        // ===================== DASHBOARD & FILTERS =====================
+        function loadDashboard(){loadRooms();loadStats();renderCalendar();}
         async function loadStats(){
             try{const snap=await db.collection('rooms').get();let ac=0,tc=0,tp=0,nc=0;const today=new Date();today.setHours(0,0,0,0);snap.forEach(r=>{const d=r.data();if(d.status==='aktif'){ac++;if(d.participants)tp+=d.participants.length;if(d.notes&&d.notes.length>0)nc++;}if(d.createdAt&&d.createdAt.toDate()>=today)tc++;});document.getElementById('statActive').textContent=ac;document.getElementById('statToday').textContent=tc;document.getElementById('statParticipants').textContent=tp;document.getElementById('statNotes').textContent=nc;}
             catch(e){}
         }
         function handleSearch(q){searchQuery=q.toLowerCase();renderRooms();}
-        function setFilter(type){
-            activeFilter=type;
-            document.querySelectorAll('.filter-btn').forEach(b=>{b.classList.remove('bg-gray-900','text-white');b.classList.add('bg-white','border','border-gray-200','text-gray-600');});
-            const map={all:'fAll',rapat_dosen:'fRapatDosen',bimbingan_skripsi:'fBimbingan',rapat_prodi:'fProdi'};
-            const btn=document.getElementById(map[type]);
-            if(btn){btn.classList.add('bg-gray-900','text-white');btn.classList.remove('bg-white','border','border-gray-200','text-gray-600');}
+        function applyFilters(){
+            currentStatusFilter = document.getElementById('filterStatus').value;
+            currentRoleFilter = document.getElementById('filterRole').value;
             renderRooms();
         }
         function loadRooms(){
@@ -695,65 +744,61 @@
                 roomsCache=[];
                 snap.forEach(r=>{
                     const d=r.data();d.id=r.id;roomsCache.push(d);
-                    // Add to activity feed
                     addActivityItem(`Rapat "${d.title}" ${d.status==='aktif'?'dimulai':'berakhir'}.`, d.createdAt);
                 });
                 renderRooms();
+                renderCalendar(); // Update calendar dots
             },err=>{console.error(err);});
         }
         
-        // NEW: Pin/Unpin Logic
         async function togglePin(roomId, event){
             if(event) event.stopPropagation();
             if(!window.userData || !window.userData.pinnedRooms) return;
-            
             const pinned = window.userData.pinnedRooms || [];
             const index = pinned.indexOf(roomId);
-            
             try {
-                if (index > -1) {
-                    // Unpin
-                    pinned.splice(index, 1);
-                    toast('Dihapus dari favorit','info');
-                } else {
-                    // Pin
-                    pinned.push(roomId);
-                    toast('Ditambahkan ke favorit','success');
-                }
+                if (index > -1) { pinned.splice(index, 1); toast('Dihapus dari favorit','info'); } 
+                else { pinned.push(roomId); toast('Ditambahkan ke favorit','success'); }
                 window.userData.pinnedRooms = pinned;
                 await db.collection('users').doc(currentUser.uid).update({pinnedRooms: pinned});
                 renderRooms();
-            } catch(e) {
-                toast('Gagal update favorit','error');
-            }
+            } catch(e) { toast('Gagal update favorit','error'); }
         }
 
         function renderRooms(){
             const tm={rapat_dosen:'Rapat Dosen',bimbingan_skripsi:'Bimbingan Skripsi',rapat_prodi:'Rapat Prodi',rapat_fakultas:'Rapat Fakultas',riset_pengabdian:'Riset & Pengabdian',koordinasi_akademik:'Koordinasi Akademik',lainnya:'Lainnya'};
-            let filtered=activeFilter==='all'?roomsCache:roomsCache.filter(r=>r.jenis_rapat===activeFilter);
-            if(searchQuery) filtered=filtered.filter(r=>(r.title||'').toLowerCase().includes(searchQuery));
             
+            // Apply Filters
+            let filtered = roomsCache.filter(r => {
+                // Search
+                if(searchQuery && !(r.title||'').toLowerCase().includes(searchQuery)) return false;
+                // Status
+                if(currentStatusFilter !== 'all' && r.status !== currentStatusFilter) return false;
+                // Role
+                if(currentRoleFilter === 'notulen' && r.notulen_id !== currentUser?.uid) return false;
+                if(currentRoleFilter === 'peserta' && !(r.participants && r.participants.includes(currentUser?.uid))) return false;
+                return true;
+            });
+
             const pinnedIds = window.userData?.pinnedRooms || [];
-            const pinned = roomsCache.filter(r => pinnedIds.includes(r.id) && r.status === 'aktif');
+            const pinned = filtered.filter(r => pinnedIds.includes(r.id) && r.status === 'aktif');
             const act = filtered.filter(r=>r.status==='aktif' && !pinnedIds.includes(r.id));
             const rec = filtered.filter(r=>r.status!=='aktif');
 
-            // Render Pinned
+            // Pinned
             const pinnedSection = document.getElementById('pinnedSection');
             const pinnedList = document.getElementById('pinnedRoomsList');
             if(pinned.length > 0){
                 pinnedSection.classList.remove('hidden');
                 pinnedList.innerHTML = pinned.map(r => renderRoomCard(r, tm, true)).join('');
-            } else {
-                pinnedSection.classList.add('hidden');
-            }
+            } else { pinnedSection.classList.add('hidden'); }
 
-            // Render Active
+            // Active
             const al=document.getElementById('activeRoomsList');
             const acEl=document.getElementById('activeCount');if(acEl)acEl.textContent=act.length;
             al.innerHTML = act.length ? act.map(r => renderRoomCard(r, tm, false)).join('') : '<div class="col-span-full empty-state"><p>Tidak ada rapat aktif lainnya</p></div>';
 
-            // Render Recent
+            // Recent
             const rl=document.getElementById('recentRoomsList');
             const rcEl=document.getElementById('recentCount');if(rcEl)rcEl.textContent=rec.length;
             rl.innerHTML=rec.length?rec.map(r=>{
@@ -796,22 +841,144 @@
             </div>`;
         }
 
-        // NEW: Activity Feed Logic
+        // Activity Feed
         function addActivityItem(text, timestamp) {
             const feed = document.getElementById('activityFeed');
             const timeStr = timestamp ? fmtT(timestamp) : 'Baru saja';
             const item = document.createElement('div');
             item.className = 'activity-item text-gray-600';
             item.innerHTML = `<p class="font-medium text-gray-800">${text}</p><p class="text-[10px] text-gray-400 mt-0.5">${timeStr}</p>`;
-            
-            // Remove placeholder if exists
-            if(feed.children.length === 1 && feed.children[0].classList.contains('text-center')) {
-                feed.innerHTML = '';
-            }
+            if(feed.children.length === 1 && feed.children[0].classList.contains('text-center')) feed.innerHTML = '';
             feed.insertBefore(item, feed.firstChild);
-            
-            // Limit feed size
             if(feed.children.length > 20) feed.removeChild(feed.lastChild);
+        }
+
+        // ===================== CALENDAR =====================
+        function changeMonth(delta){
+            currentCalendarDate.setMonth(currentCalendarDate.getMonth() + delta);
+            renderCalendar();
+        }
+        function renderCalendar(){
+            const grid = document.getElementById('calendarGrid');
+            const label = document.getElementById('calendarMonthLabel');
+            const eventsDiv = document.getElementById('calendarEvents');
+            grid.innerHTML = '';
+            eventsDiv.innerHTML = '';
+            
+            const now = new Date();
+            const year = currentCalendarDate.getFullYear();
+            const month = currentCalendarDate.getMonth();
+            const monthNames = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+            label.textContent = `${monthNames[month]} ${year}`;
+
+            const firstDay = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const startDay = firstDay === 0 ? 6 : firstDay - 1; // Monday start
+
+            // Get events for this month
+            const monthEvents = roomsCache.filter(r => {
+                const d = r.createdAt?.toDate();
+                return d && d.getMonth() === month && d.getFullYear() === year;
+            });
+
+            // Render empty slots
+            for(let i=0; i<startDay; i++) {
+                grid.innerHTML += `<div></div>`;
+            }
+
+            // Render days
+            for(let d=1; d<=daysInMonth; d++){
+                const isToday = (d === now.getDate() && month === now.getMonth() && year === now.getFullYear());
+                const hasEvent = monthEvents.some(r => r.createdAt?.toDate().getDate() === d);
+                const isSelected = selectedCalendarDate && selectedCalendarDate.getDate() === d && selectedCalendarDate.getMonth() === month;
+                
+                const className = `calendar-day ${isToday ? 'today' : ''} ${hasEvent ? 'has-event' : ''} ${isSelected ? 'selected' : ''}`;
+                grid.innerHTML += `<div class="${className}" onclick="selectCalendarDate(${year},${month},${d})">${d}</div>`;
+            }
+
+            // Show events for selected date or today
+            const targetDate = selectedCalendarDate || now;
+            if(targetDate.getMonth() === month && targetDate.getFullYear() === year){
+                const dayEvents = monthEvents.filter(r => r.createdAt?.toDate().getDate() === targetDate.getDate());
+                if(dayEvents.length > 0){
+                    dayEvents.forEach(r => {
+                        const time = fmtT(r.createdAt);
+                        eventsDiv.innerHTML += `<div class="flex items-center gap-2 p-1 hover:bg-gray-50 rounded cursor-pointer" onclick="enterRoom('${r.id}')">
+                            <span class="w-1.5 h-1.5 rounded-full ${r.status==='aktif'?'bg-green-500':'bg-gray-400'}"></span>
+                            <span class="truncate font-medium">${r.title}</span>
+                            <span class="text-gray-400 ml-auto">${time}</span>
+                        </div>`;
+                    });
+                } else {
+                    eventsDiv.innerHTML = '<p class="text-center text-gray-400 py-2">Tidak ada rapat</p>';
+                }
+            }
+        }
+        function selectCalendarDate(y, m, d){
+            selectedCalendarDate = new Date(y, m, d);
+            renderCalendar();
+        }
+
+        // ===================== REPORT GENERATION =====================
+        function generateReport(){
+            const now = new Date();
+            const monthName = now.toLocaleString('id-ID', { month: 'long' });
+            const year = now.getFullYear();
+            const userRooms = roomsCache.filter(r => r.status === 'selesai' && (r.notulen_id === currentUser?.uid || (r.participants && r.participants.includes(currentUser?.uid))) && r.createdAt?.toDate().getMonth() === now.getMonth());
+
+            if(userRooms.length === 0) return toast('Tidak ada riwayat rapat bulan ini','warning');
+
+            const content = `
+                <div style="font-family: sans-serif; padding: 20px; color: #111827;">
+                    <h1 style="font-size: 24px; margin-bottom: 5px;">Laporan Rapat Bulan ${monthName} ${year}</h1>
+                    <p style="color: #6b7280; margin-bottom: 20px;">Dokumen ini digenerate otomatis oleh ERapatUnsam.</p>
+                    <hr style="border: 0; border-top: 1px solid #e5e7eb; margin-bottom: 20px;">
+                    <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+                        <thead>
+                            <tr style="background: #f9fafb; text-align: left;">
+                                <th style="padding: 8px; border-bottom: 1px solid #e5e7eb;">Judul Rapat</th>
+                                <th style="padding: 8px; border-bottom: 1px solid #e5e7eb;">Tanggal</th>
+                                <th style="padding: 8px; border-bottom: 1px solid #e5e7eb;">Peran</th>
+                                <th style="padding: 8px; border-bottom: 1px solid #e5e7eb;">Peserta</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${userRooms.map(r => `
+                                <tr>
+                                    <td style="padding: 8px; border-bottom: 1px solid #f3f4f6; font-weight: 500;">${r.title}</td>
+                                    <td style="padding: 8px; border-bottom: 1px solid #f3f4f6;">${fmtD(r.createdAt)}</td>
+                                    <td style="padding: 8px; border-bottom: 1px solid #f3f4f6;">${r.notulen_id === currentUser?.uid ? 'Notulen' : 'Peserta'}</td>
+                                    <td style="padding: 8px; border-bottom: 1px solid #f3f4f6;">${(r.participants?.length || 0) + 1} orang</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                    <div style="margin-top: 40px; text-align: right; color: #6b7280; font-size: 10px;">
+                        <p>Dicetak pada: ${new Date().toLocaleString('id-ID')}</p>
+                        <p>ERapatUnsam - Universitas Samudra</p>
+                    </div>
+                </div>
+            `;
+
+            const opt = {
+                margin: 10,
+                filename: `Laporan_Rapat_${monthName}_${year}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2 },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+
+            // Create temp element
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = content;
+            document.body.appendChild(tempDiv);
+            tempDiv.style.position = 'absolute';
+            tempDiv.style.left = '-9999px';
+
+            html2pdf().set(opt).from(tempDiv).save().then(() => {
+                document.body.removeChild(tempDiv);
+                toast('Laporan berhasil diunduh!','success');
+            });
         }
 
         // ===================== ROOM DETAIL =====================
@@ -871,8 +1038,6 @@
             setTimeout(()=>document.getElementById('cTitle').focus(),100);
         }
         function hideCreateModal(){document.getElementById('createModal').classList.add('hidden');document.getElementById('createModal').classList.remove('flex');}
-        
-        // NEW: Template Application
         function applyTemplate(id){
             const t = templates[id];
             if(!t) return;
@@ -881,7 +1046,6 @@
             document.getElementById('cType').value = t.type;
             toast('Template diterapkan','info');
         }
-
         async function submitCreate(){
             const title=document.getElementById('cTitle').value.trim(),agenda=document.getElementById('cAgenda').value.trim(),type=document.getElementById('cType').value,loc=document.getElementById('cLoc').value.trim();
             if(!title)return toast('Judul rapat harus diisi','error');
