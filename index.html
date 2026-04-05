@@ -13,10 +13,12 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
         tailwind.config = {
-            theme: { extend: {
-                fontFamily: { sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'] },
-                colors: { brand: '#2563eb', 'brand-dark': '#1d4ed8', 'brand-light': '#eff6ff', surface: '#fafbfc', border: '#e5e7eb', muted: '#6b7280' }
-            }}
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'] },
+                    colors: { brand: '#2563eb', 'brand-dark': '#1d4ed8', 'brand-light': '#eff6ff', surface: '#fafbfc', border: '#e5e7eb', muted: '#6b7280' }
+                }
+            }
         }
     </script>
     <style>
@@ -303,7 +305,7 @@
             <div class="lg:col-span-1 space-y-4 sidebar-col">
                 <div class="card p-5 sticky top-24"><h3 class="text-xs font-bold text-gray-900 mb-4 flex items-center gap-2 uppercase tracking-wider"><svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>Info Rapat</h3><div class="space-y-4 text-sm"><div class="flex justify-between items-center"><span class="text-muted font-medium">Notulen</span><p id="rNotulen" class="font-bold text-gray-900 text-right truncate max-w-[120px]"></p></div><div class="flex justify-between items-center"><span class="text-muted font-medium">Jenis</span><p id="rType" class="font-bold text-gray-900 text-right"></p></div><div class="flex justify-between items-center"><span class="text-muted font-medium">Lokasi</span><p id="rLoc" class="font-bold text-gray-900 text-right truncate max-w-[120px]"></p></div><div class="flex justify-between items-center"><span class="text-muted font-medium">Mulai</span><p id="rStart" class="font-bold text-gray-900 text-right text-xs"></p></div><div id="rAgendaBlock" class="pt-4 border-t border-gray-100"><span class="text-muted font-medium block mb-2">Agenda</span><p id="rAgenda" class="font-medium text-gray-700 text-xs leading-relaxed bg-gray-50 p-3 rounded-lg"></p></div></div><button onclick="copyRoomInfo()" class="btn btn-outline btn-full btn-sm mt-5"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>Salin Info</button></div>
                 <div class="card p-5 sticky top-[400px]"><h3 class="text-xs font-bold text-gray-900 mb-4 flex items-center gap-2 uppercase tracking-wider"><svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>Peserta (<span id="rPCount">0</span>)</h3><div id="rPList" class="space-y-2 max-h-40 overflow-y-auto pr-1"></div></div>
-                <div id="rDocBox" class="hidden card p-5"><h3 class="text-xs font-bold text-gray-900 mb-3">Dokumen Rapat</h3><div id="docList" class="space-y-2 mb-3 max-h-32 overflow-y-auto text-xs text-muted"></div><label class="btn btn-outline btn-full btn-sm cursor-pointer justify-center"><span>+ Upload Dokumen</span><input type="file" id="docInput" class="hidden" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.presentation" onchange="handleDocUpload(event)"></label><p class="text-[9px] text-gray-400 mt-2 text-center">Hanya PDF & MS Office</p></div>
+                <div id="rDocBox" class="hidden card p-5"><h3 class="text-xs font-bold text-gray-900 mb-3">Dokumen Rapat</h3><div id="docList" class="space-y-2 mb-3 max-h-32 overflow-y-auto text-xs text-muted"></div><label class="btn btn-outline btn-full btn-sm cursor-pointer justify-center"><span>+ Upload Dokumen</span><input type="file" id="docInput" class="hidden" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx" onchange="handleDocUpload(event)"></label><p class="text-[9px] text-gray-400 mt-2 text-center">Hanya PDF & MS Office</p></div>
             </div>
         </div>
     </div>
@@ -415,17 +417,28 @@
                 }catch(e){document.getElementById('saveInd').innerHTML='<span class="w-1.5 h-1.5 bg-red-500 rounded-full"></span> Gagal';}
             },800);
         }
+        
+        // FIXED: insertHtmlAtCursor using robust Range API
         function insertHtmlAtCursor(html) {
-            const editor = document.getElementById('editor'); editor.focus();
+            const editor = document.getElementById('editor');
+            editor.focus();
             const sel = window.getSelection();
             if (sel.rangeCount) {
-                const range = sel.getRangeAt(0); range.deleteContents();
+                const range = sel.getRangeAt(0);
+                range.deleteContents();
                 const frag = document.createRange().createContextualFragment(html);
-                range.insertNode(frag); range.setStartAfter(frag.lastChild); range.collapse(true);
-                sel.removeAllRanges(); sel.addRange(range);
-            } else { editor.innerHTML += html; }
+                range.insertNode(frag);
+                // Move cursor to end of inserted content safely
+                range.setStartAfter(frag.lastChild || frag);
+                range.collapse(true);
+                sel.removeAllRanges();
+                sel.addRange(range);
+            } else {
+                editor.innerHTML += html;
+            }
             debouncedSave();
         }
+
         function triggerImageUpload() { document.getElementById('editorImageInput').click(); }
         async function handleEditorImageUpload(event) {
             const files = Array.from(event.target.files);
@@ -593,7 +606,6 @@
             }catch(e){toast(e.message,'error');}
         }
 
-        // FIXED: Profile Photo Upload with proper Supabase URL handling
         async function handleProfileUpload(event) {
             const file = event.target.files[0];
             if(!file) return;
@@ -636,7 +648,6 @@
             }
         }
 
-        // FIXED: Document Upload with proper Supabase URL handling
         async function handleDocUpload(event) {
             const file = event.target.files[0];
             if(!file || !currentRoomId) return;
@@ -942,4 +953,3 @@
     </script>
 </body>
 </html>
-
