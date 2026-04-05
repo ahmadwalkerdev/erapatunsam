@@ -178,31 +178,21 @@
     <div id="dashboardView" class="view min-h-screen flex-col bg-surface">
         <nav class="bg-white/80 backdrop-blur-xl border-b border-gray-100 sticky top-0 z-40">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-4">
-                <!-- Left: Logo & Web Name -->
                 <div class="flex items-center gap-3 flex-shrink-0">
                     <div class="w-9 h-9 bg-brand rounded-xl flex items-center justify-center shadow-lg shadow-brand/20">
                         <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
                     </div>
                     <div class="hidden sm:block"><h1 class="font-bold text-gray-900 text-base">ERapatUnsam</h1></div>
                 </div>
-
-                <!-- Right: Account Icon+Name, Report, Create, Logout -->
                 <div class="flex items-center gap-2 sm:gap-3 flex-shrink-0">
                     <button onclick="generateReport()" class="p-2.5 text-gray-400 hover:text-brand hover:bg-brand-light rounded-xl transition-all hidden sm:flex" title="Laporan">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
                     </button>
                     <button onclick="openCreateModal()" class="btn btn-primary btn-sm shadow-lg shadow-brand/20"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg><span class="hidden sm:inline">Buat</span></button>
-                    
-                    <!-- Account Profile Section -->
                     <button onclick="showSettings()" class="flex items-center gap-2.5 hover:bg-gray-50 rounded-xl p-1.5 transition-all">
-                        <div id="navAvatar" class="w-8 h-8 rounded-full bg-brand/10 text-brand flex items-center justify-center text-sm font-bold shadow-sm overflow-hidden">
-                            <!-- Initials or Image injected by JS -->
-                        </div>
-                        <span id="navName" class="text-sm font-medium text-gray-700 hidden sm:block max-w-[100px] truncate">
-                            <!-- Name injected by JS -->
-                        </span>
+                        <div id="navAvatar" class="w-8 h-8 rounded-full bg-brand/10 text-brand flex items-center justify-center text-sm font-bold shadow-sm overflow-hidden"></div>
+                        <span id="navName" class="text-sm font-medium text-gray-700 hidden sm:block max-w-[100px] truncate"></span>
                     </button>
-
                     <button onclick="handleLogout()" class="p-2.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all" title="Keluar">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
                     </button>
@@ -278,7 +268,6 @@
                 <div class="lg:w-64 flex-shrink-0">
                     <div class="card p-6 sticky top-24">
                         <div class="text-center mb-6 pb-6 border-b border-gray-100">
-                            <!-- UPDATED AVATAR CONTAINER -->
                             <div id="settingsAvatar" class="w-20 h-20 mx-auto rounded-full bg-brand/10 text-brand flex items-center justify-center text-2xl font-bold mb-3 overflow-hidden"></div>
                             <p id="settingsUserName" class="font-bold text-gray-900 text-lg"></p>
                             <p id="settingsUserEmail" class="text-xs text-muted truncate"></p>
@@ -295,7 +284,6 @@
                         <div class="card p-6 mb-4">
                             <h3 class="text-base font-bold text-gray-900 mb-6">Informasi Pribadi</h3>
                             <div class="space-y-5">
-                                <!-- NEW: Profile Photo Upload -->
                                 <div>
                                     <label class="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wider">Foto Profil</label>
                                     <div class="flex items-center gap-4">
@@ -306,7 +294,6 @@
                                         <span class="text-xs text-muted">Maks 2MB (JPG/PNG)</span>
                                     </div>
                                 </div>
-                                
                                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
                                     <div><label class="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wider">NIDN/NIP</label><input id="sNidn" class="input"></div>
                                     <div><label class="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wider">Jabatan</label><select id="sJabatan" class="input"><option value="">Pilih</option><option>Asisten Ahli</option><option>Lektor</option><option>Lektor Kepala</option><option>Guru Besar</option><option>Tenaga Kependidikan</option></select></div>
@@ -481,7 +468,6 @@
                                 <button onclick="fmt('formatBlock','<h2>')" onmousedown="event.preventDefault()" class="tool-btn text-xs font-bold" title="Heading">H</button>
                                 <button onclick="fmt('removeFormat')" onmousedown="event.preventDefault()" class="tool-btn text-xs" title="Hapus Format"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
                                 
-                                <!-- Text Color Palette -->
                                 <div class="relative">
                                     <button onclick="togglePalette('textPalette')" onmousedown="event.preventDefault()" class="tool-btn" title="Warna Teks">
                                         <div class="w-4 h-4 rounded-full border border-gray-300 overflow-hidden"><div class="w-full h-full" style="background: linear-gradient(135deg, #ef4444 50%, #3b82f6 50%);"></div></div>
@@ -499,7 +485,6 @@
                                     </div>
                                 </div>
 
-                                <!-- Highlight Palette -->
                                 <div class="relative">
                                     <button onclick="togglePalette('highlightPalette')" onmousedown="event.preventDefault()" class="tool-btn" title="Highlight (Background)">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"></path></svg>
@@ -555,12 +540,9 @@
                     <div id="rPList" class="space-y-2 max-h-48 overflow-y-auto pr-1"></div>
                 </div>
                 
-                <!-- NEW: Documents Section -->
                 <div id="rDocBox" class="hidden card p-5 sticky top-[720px]">
                     <h3 class="text-xs font-bold text-gray-900 mb-3">Dokumen Rapat</h3>
-                    <div id="docList" class="space-y-2 mb-3 max-h-32 overflow-y-auto text-xs text-muted">
-                        <!-- Doc items injected here -->
-                    </div>
+                    <div id="docList" class="space-y-2 mb-3 max-h-32 overflow-y-auto text-xs text-muted"></div>
                     <label class="btn btn-outline btn-full btn-sm cursor-pointer justify-center">
                         <span>+ Upload Dokumen</span>
                         <input type="file" id="docInput" class="hidden" onchange="handleDocUpload(event)">
@@ -619,13 +601,10 @@
         const SUPABASE_URL = 'https://whtmgsqgcahnfuexrumf.supabase.co'; 
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndodG1nc3FnY2FobmZ1ZXhydW1mIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyOTkzNTUsImV4cCI6MjA5MDg3NTM1NX0.BPqnl6SSO6mY4Lxvfpbb8qej8sW8IiOKG4xXG10kwAs'; 
         
-        // Inisialisasi Client Supabase dengan Pengaman
         let supabaseClient = null;
         try {
             if (typeof window.supabase !== 'undefined') {
                 supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-            } else {
-                console.warn("Supabase CDN not loaded. File features disabled.");
             }
         } catch (err) {
             console.error("Supabase Init Error:", err);
@@ -766,8 +745,11 @@
                 }
                 if(!window.userData.pinnedRooms) window.userData.pinnedRooms = [];
                 
-                // Update UI names & avatars
-                updateAvatarUI(window.userData.photoURL || null);
+                // Cache buster for profile photo
+                let photoURL = window.userData.photoURL || null;
+                if(photoURL) photoURL = photoURL + (photoURL.includes('?') ? '&' : '?') + 't=' + Date.now();
+                
+                updateAvatarUI(photoURL);
                 document.getElementById('navName').textContent = window.userData.name;
                 updateMasterUI();
                 
@@ -812,7 +794,12 @@
             document.getElementById('sName').value=u.name||'';document.getElementById('sEmail').value=u.email||'';
             document.getElementById('sNidn').value=u.nidn||'';document.getElementById('sJabatan').value=u.jabatan||'';
             document.getElementById('sFakultas').value=u.fakultas||'';document.getElementById('sProdi').value=u.prodi||'';
-            updateAvatarUI(u.photoURL || null);
+            
+            // Cache buster
+            let photoURL = u.photoURL || null;
+            if(photoURL) photoURL = photoURL + (photoURL.includes('?') ? '&' : '?') + 't=' + Date.now();
+            updateAvatarUI(photoURL);
+            
             document.getElementById('settingsUserName').textContent=u.name||'';
             document.getElementById('settingsUserEmail').textContent=u.email||'';
             switchSettingsTab('profile');showView('settingsView');
@@ -836,7 +823,11 @@
             try{
                 await db.collection('users').doc(currentUser.uid).update({name:n, nidn:nidn, jabatan:jab, fakultas:fak, prodi:prodi});
                 window.userData.name=n; window.userData.nidn=nidn; window.userData.jabatan=jab; window.userData.fakultas=fak; window.userData.prodi=prodi;
-                updateAvatarUI(window.userData.photoURL || null);
+                
+                let photoURL = window.userData.photoURL || null;
+                if(photoURL) photoURL = photoURL + (photoURL.includes('?') ? '&' : '?') + 't=' + Date.now();
+                updateAvatarUI(photoURL);
+                
                 document.getElementById('settingsUserName').textContent=n;
                 document.getElementById('navName').textContent = n;
                 toast('Profil diperbarui!','success');
@@ -877,7 +868,7 @@
         }
 
         // ===================== SUPABASE FUNCTIONS =====================
-        // 1. Profile Photo Upload
+        // 1. Profile Photo Upload (FIXED with cache buster)
         async function handleProfileUpload(event) {
             const file = event.target.files[0];
             if(!file) return;
@@ -885,32 +876,29 @@
             
             toast('Mengupload foto...', 'info');
             const fileExt = file.name.split('.').pop();
-            const fileName = `public/${currentUser.uid}.${fileExt}`;
+            const fileName = `profile-${currentUser.uid}.${fileExt}`;
 
             try {
                 if (!supabaseClient) throw new Error("Supabase tidak terkoneksi");
 
-                // Upload ke Supabase
                 const { data, error } = await supabaseClient
                     .storage
                     .from('profile-photos')
-                    .upload(fileName, file, { upsert: true });
+                    .upload(fileName, file, { upsert: true, cacheControl: '0' });
 
                 if(error) throw error;
 
-                // Get Public URL (FIXED: use publicUrl not publicUrlData)
                 const { publicUrl } = supabaseClient
                     .storage
                     .from('profile-photos')
                     .getPublicUrl(fileName);
                 
-                const photoUrl = publicUrl;
+                // ⭐ Cache buster for immediate display
+                const photoUrl = `${publicUrl}?t=${Date.now()}`;
 
-                // Update Firebase Auth & Firestore
                 await currentUser.updateProfile({ photoURL: photoUrl });
                 await db.collection('users').doc(currentUser.uid).update({ photoURL: photoUrl });
                 
-                // Update Local State & UI
                 window.userData.photoURL = photoUrl;
                 updateAvatarUI(photoUrl);
                 toast('Foto profil berhasil diubah!', 'success');
@@ -919,7 +907,7 @@
             }
         }
 
-        // 2. Meeting Document Upload
+        // 2. Meeting Document Upload (FIXED with cache buster & force refresh)
         async function handleDocUpload(event) {
             const file = event.target.files[0];
             if(!file || !currentRoomId) return;
@@ -931,21 +919,18 @@
             try {
                 if (!supabaseClient) throw new Error("Supabase tidak terkoneksi");
 
-                // Upload ke Supabase
                 const { data, error } = await supabaseClient
                     .storage
                     .from('meeting-docs')
-                    .upload(filePath, file);
+                    .upload(filePath, file, { cacheControl: '0' });
 
                 if(error) throw error;
 
-                // Get Public URL (FIXED: use publicUrl not publicUrlData)
                 const { publicUrl } = supabaseClient
                     .storage
                     .from('meeting-docs')
                     .getPublicUrl(filePath);
 
-                // Simpan metadata ke Firestore
                 await db.collection('documents').add({
                     roomId: currentRoomId,
                     fileName: file.name,
@@ -956,16 +941,27 @@
                 });
 
                 toast('Dokumen berhasil ditambahkan!', 'success');
-                event.target.value = ''; // Reset input
+                event.target.value = '';
+                
+                // ⭐ Force refresh document list
+                if(unsubDocs) unsubDocs();
+                loadDocuments(currentRoomId);
             } catch (err) {
                 toast('Gagal upload: ' + err.message, 'error');
             }
         }
 
-        // 3. Render Avatar (Image or Initials)
+        // 3. Render Avatar (FIXED with cache buster)
         function updateAvatarUI(photoUrl) {
             const ini = initials(window.userData.name);
-            const imgTag = photoUrl ? `<img src="${photoUrl}" class="w-full h-full object-cover">` : ini;
+            let imgTag;
+            if(photoUrl) {
+                // Add cache buster if not already present
+                const cacheBuster = photoUrl.includes('?') ? '&t=' + Date.now() : '?t=' + Date.now();
+                imgTag = `<img src="${photoUrl}${cacheBuster}" class="w-full h-full object-cover">`;
+            } else {
+                imgTag = ini;
+            }
             
             document.getElementById('navAvatar').innerHTML = imgTag;
             document.getElementById('settingsAvatar').innerHTML = imgTag;
@@ -1305,7 +1301,6 @@
                 updateCounts();
                 document.getElementById('editor').oninput=()=>{updateCounts();markUnsaved();debouncedSave();};
                 
-                // Load Documents
                 loadDocuments(rid);
             }else{
                 document.getElementById('rPinBox').classList.add('hidden');document.getElementById('rEndBtn').classList.add('hidden');
@@ -1342,28 +1337,38 @@
             });
         }
 
-        // Load Documents Listener
+        // Load Documents Listener (FIXED with cache buster & error handling)
         function loadDocuments(rid){
             if(unsubDocs) unsubDocs();
-            unsubDocs = db.collection('documents').where('roomId', '==', rid).orderBy('createdAt', 'desc').onSnapshot(snap=>{
-                const list = document.getElementById('docList');
-                if(snap.empty) {
-                    list.innerHTML = '<p class="text-center text-muted italic py-2">Belum ada dokumen</p>';
-                    return;
-                }
-                list.innerHTML = '';
-                snap.forEach(d=>{
-                    const doc = d.data();
-                    list.innerHTML += `
-                        <div class="flex items-center justify-between p-2 bg-gray-50 rounded-lg border border-gray-100">
-                            <a href="${doc.fileUrl}" target="_blank" class="flex items-center gap-2 truncate pr-2">
-                                <svg class="w-4 h-4 text-brand flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                                <span class="truncate font-medium text-gray-700 hover:text-brand">${doc.fileName}</span>
-                            </a>
-                            <span class="text-[9px] text-muted flex-shrink-0">${fmtT(doc.createdAt)}</span>
-                        </div>`;
+            const list = document.getElementById('docList');
+            list.innerHTML = '<p class="text-center text-muted italic py-2">Memuat dokumen...</p>';
+
+            unsubDocs = db.collection('documents')
+                .where('roomId', '==', rid)
+                .orderBy('createdAt', 'desc')
+                .onSnapshot(snap => {
+                    if(snap.empty) {
+                        list.innerHTML = '<p class="text-center text-muted italic py-2">Belum ada dokumen</p>';
+                        return;
+                    }
+                    list.innerHTML = '';
+                    snap.forEach(d => {
+                        const doc = d.data();
+                        // ⭐ Cache buster for document links
+                        const fileUrl = doc.fileUrl + (doc.fileUrl.includes('?') ? '&' : '?') + 't=' + Date.now();
+                        list.innerHTML += `
+                            <div class="flex items-center justify-between p-2 bg-gray-50 rounded-lg border border-gray-100">
+                                <a href="${fileUrl}" target="_blank" class="flex items-center gap-2 truncate pr-2">
+                                    <svg class="w-4 h-4 text-brand flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                                    <span class="truncate font-medium text-gray-700 hover:text-brand">${doc.fileName}</span>
+                                </a>
+                                <span class="text-[9px] text-muted flex-shrink-0">${fmtT(doc.createdAt)}</span>
+                            </div>`;
+                    });
+                }, err => {
+                    console.error("Doc load error:", err);
+                    list.innerHTML = '<p class="text-center text-red-500 italic py-2">Gagal memuat dokumen</p>';
                 });
-            });
         }
 
         function updateCounts(){const editor=document.getElementById('editor');const text=editor.innerText||'';document.getElementById('charCount').textContent=text.length+' karakter';document.getElementById('wordCount').textContent=(text.trim()?text.trim().split(/\s+/).length:0)+' kata';}
@@ -1434,3 +1439,4 @@
     </script>
 </body>
 </html>
+
