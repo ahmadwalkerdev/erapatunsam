@@ -726,14 +726,18 @@
             }
             toast('Dokumen berhasil diupload','success'); event.target.value='';
         }
+        // FIXED: Added null check for elements
         function loadAttachments(){
             if(!currentRoomId) return;
+            const grid = document.getElementById('imageAttachmentsGrid');
+            const list = document.getElementById('docAttachmentsList');
+            if(!grid || !list) return; // FIXED: Return early if elements don't exist yet
+            
             if(unsubAttachments) unsubAttachments();
             unsubAttachments = db.collection('attachments').where('roomId','==',currentRoomId).orderBy('createdAt','desc').onSnapshot(snap => {
                 const images = snap.docs.filter(d => d.data().type === 'image');
                 const docs = snap.docs.filter(d => d.data().type === 'document');
                 // Render Images
-                const grid = document.getElementById('imageAttachmentsGrid');
                 if(images.length === 0){ grid.innerHTML = '<p class="text-xs text-muted col-span-full text-center py-4">Belum ada gambar</p>'; }
                 else {
                     grid.innerHTML = '';
@@ -746,7 +750,6 @@
                     });
                 }
                 // Render Documents
-                const list = document.getElementById('docAttachmentsList');
                 if(docs.length === 0){ list.innerHTML = '<p class="text-xs text-muted text-center py-4">Belum ada dokumen</p>'; }
                 else {
                     list.innerHTML = '';
@@ -809,11 +812,15 @@
                 let photoURL = window.userData.photoURL || null;
                 if(photoURL && !photoURL.includes('unsam')) photoURL += (photoURL.includes('?')?'&':'?')+'t='+Date.now();
                 updateAvatarUI(photoURL);
-                document.getElementById('navName').textContent = window.userData.name;
+                const navNameEl = document.getElementById('navName');
+                if(navNameEl) navNameEl.textContent = window.userData.name;
                 updateMasterUI(); showView('dashboardView'); loadDashboard();
             }else{
                 currentUser=null;currentRoomId=null;isNotulen=false;window.userData=null;
-                document.getElementById('navAvatar').innerHTML = '?'; document.getElementById('navName').textContent = '';
+                const navAvatarEl = document.getElementById('navAvatar');
+                if(navAvatarEl) navAvatarEl.innerHTML = '?';
+                const navNameEl = document.getElementById('navName');
+                if(navNameEl) navNameEl.textContent = '';
                 showView('authView');
             }
         });
@@ -843,14 +850,25 @@
         function showSettings(){
             if(!window.userData)return;
             const u=window.userData;
-            document.getElementById('sName').value=u.name||'';document.getElementById('sEmail').value=u.email||'';
-            document.getElementById('sNidn').value=u.nidn||'';document.getElementById('sJabatan').value=u.jabatan||'';
-            document.getElementById('sFakultas').value=u.fakultas||'';document.getElementById('sProdi').value=u.prodi||'';
+            const sName=document.getElementById('sName');
+            const sEmail=document.getElementById('sEmail');
+            const sNidn=document.getElementById('sNidn');
+            const sJabatan=document.getElementById('sJabatan');
+            const sFakultas=document.getElementById('sFakultas');
+            const sProdi=document.getElementById('sProdi');
+            if(sName) sName.value=u.name||'';
+            if(sEmail) sEmail.value=u.email||'';
+            if(sNidn) sNidn.value=u.nidn||'';
+            if(sJabatan) sJabatan.value=u.jabatan||'';
+            if(sFakultas) sFakultas.value=u.fakultas||'';
+            if(sProdi) sProdi.value=u.prodi||'';
             let photoURL = u.photoURL || null;
             if(photoURL && !photoURL.includes('unsam')) photoURL += (photoURL.includes('?')?'&':'?')+'t='+Date.now();
             updateAvatarUI(photoURL);
-            document.getElementById('settingsUserName').textContent=u.name||'';
-            document.getElementById('settingsUserEmail').textContent=u.email||'';
+            const settingsUserName=document.getElementById('settingsUserName');
+            const settingsUserEmail=document.getElementById('settingsUserEmail');
+            if(settingsUserName) settingsUserName.textContent=u.name||'';
+            if(settingsUserEmail) settingsUserEmail.textContent=u.email||'';
             switchSettingsTab('profile');showView('settingsView');
         }
         function backToDashboard(){showView('dashboardView');loadDashboard();}
@@ -871,7 +889,10 @@
                 let photoURL = window.userData.photoURL || null;
                 if(photoURL && !photoURL.includes('unsam')) photoURL += (photoURL.includes('?')?'&':'?')+'t='+Date.now();
                 updateAvatarUI(photoURL);
-                document.getElementById('settingsUserName').textContent=n; document.getElementById('navName').textContent = n;
+                const settingsUserName=document.getElementById('settingsUserName');
+                const navName=document.getElementById('navName');
+                if(settingsUserName) settingsUserName.textContent=n;
+                if(navName) navName.textContent = n;
                 toast('Profil diperbarui!','success');
             } catch(e){toast(e.message,'error');}
             setLoad('saveProfileBtnText','saveProfileSpinner',false);
@@ -969,8 +990,10 @@
         function updateAvatarUI(photoUrl) {
             const ini = initials(window.userData.name);
             const imgTag = photoUrl ? `<img src="${photoUrl}" class="w-full h-full object-cover" onerror="this.parentElement.textContent='${ini}'">` : ini;
-            document.getElementById('navAvatar').innerHTML = imgTag;
-            document.getElementById('settingsAvatar').innerHTML = imgTag;
+            const navAvatar=document.getElementById('navAvatar');
+            const settingsAvatar=document.getElementById('settingsAvatar');
+            if(navAvatar) navAvatar.innerHTML = imgTag;
+            if(settingsAvatar) settingsAvatar.innerHTML = imgTag;
         }
 
         // ===================== DASHBOARD =====================
@@ -1035,7 +1058,9 @@
                 <div class="p-5"><div class="flex items-start justify-between mb-4 pr-6"><div class="flex-1 min-w-0"><h3 class="font-bold text-gray-900 text-base leading-snug line-clamp-2 mb-2">${r.title||'Rapat'}</h3><span class="inline-block px-3 py-1 bg-brand/10 text-brand text-[10px] font-bold rounded-lg uppercase tracking-wider">${tm[r.jenis_rapat]||'Umum'}</span></div><span class="live-dot mt-1.5"></span></div><div class="flex items-center gap-4 text-xs text-muted mb-4 font-medium"><span class="flex items-center gap-1"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>${r.notulen_name||'?'}</span>${r.lokasi?`<span class="flex items-center gap-1"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>${r.lokasi}</span>`:''}</div><div class="flex items-center justify-between text-[11px] text-gray-400 font-medium"><span>${fmtD(r.createdAt)}</span><span class="flex items-center gap-1"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>${(r.participants?.length||0)+1}</span></div></div><div class="px-5 py-3 bg-gray-50/50 border-t border-gray-100"><div class="w-full py-2 ${io?'bg-brand text-white':'bg-gray-200 text-gray-600'} font-bold rounded-xl text-[11px] text-center uppercase tracking-wider">${io?'Masuk (Notulen)':'Lihat Detail'}</div></div></div>`;
         }
         function addActivityItem(text, timestamp) {
-            const feed = document.getElementById('activityFeed'); const timeStr = timestamp ? fmtT(timestamp) : 'Baru saja';
+            const feed = document.getElementById('activityFeed'); 
+            if(!feed) return;
+            const timeStr = timestamp ? fmtT(timestamp) : 'Baru saja';
             const item = document.createElement('div'); item.className = 'activity-item flex gap-3 items-start';
             item.innerHTML = `<div class="w-1.5 h-1.5 rounded-full bg-brand mt-1.5 flex-shrink-0"></div><div><p class="font-medium text-gray-700">${text}</p><p class="text-[10px] text-gray-400 mt-0.5">${timeStr}</p></div>`;
             if(feed.children.length === 1 && feed.children[0].classList.contains('text-center')) feed.innerHTML = '';
@@ -1043,8 +1068,13 @@
         }
         function changeMonth(delta){ currentCalendarDate.setMonth(currentCalendarDate.getMonth() + delta); renderCalendar(); }
         function renderCalendar(){
-            const grid = document.getElementById('calendarGrid'); const label = document.getElementById('calendarMonthLabel'); const eventsDiv = document.getElementById('calendarEvents');
-            grid.innerHTML = ''; eventsDiv.innerHTML = ''; const now = new Date(); const year = currentCalendarDate.getFullYear(); const month = currentCalendarDate.getMonth();
+            const grid = document.getElementById('calendarGrid'); 
+            const label = document.getElementById('calendarMonthLabel'); 
+            const eventsDiv = document.getElementById('calendarEvents');
+            if(!grid || !label || !eventsDiv) return; // FIXED: Return early if elements don't exist
+            
+            grid.innerHTML = ''; eventsDiv.innerHTML = ''; 
+            const now = new Date(); const year = currentCalendarDate.getFullYear(); const month = currentCalendarDate.getMonth();
             const monthNames = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des']; label.textContent = `${monthNames[month]} ${year}`;
             const firstDay = new Date(year, month, 1).getDay(); const daysInMonth = new Date(year, month + 1, 0).getDate(); const startDay = firstDay === 0 ? 6 : firstDay - 1; 
             const monthEvents = roomsCache.filter(r => { const d = r.createdAt?.toDate(); return d && d.getMonth() === month && d.getFullYear() === year; });
@@ -1076,7 +1106,9 @@
         function showRoomDetail(roomId){
             const r=roomsCache.find(x=>x.id===roomId); if(!r)return;
             const tm={rapat_dosen:'Rapat Dosen',bimbingan_skripsi:'Bimbingan Skripsi',rapat_prodi:'Rapat Prodi',rapat_fakultas:'Rapat Fakultas',riset_pengabdian:'Riset & Pengabdian',koordinasi_akademik:'Koordinasi Akademik',lainnya:'Lainnya'};
-            document.getElementById('rdContent').innerHTML=`<div class="text-center mb-6"><h3 class="text-xl font-bold">${r.title||'Rapat'}</h3><span class="badge badge-blue mt-3">${tm[r.jenis_rapat]||'Umum'}</span></div><div class="space-y-4 text-sm mb-6"><div class="flex justify-between py-3 border-b"><span class="text-muted">Notulen</span><span class="font-bold">${r.notulen_name||'-'}</span></div><div class="flex justify-between py-3 border-b"><span class="text-muted">Lokasi</span><span class="font-bold">${r.lokasi||'-'}</span></div><div class="flex justify-between py-3 border-b"><span class="text-muted">Mulai</span><span class="font-bold">${fmtFull(r.createdAt)}</span></div>${r.agenda?`<div class="py-3"><span class="text-muted block mb-2">Agenda</span><p class="bg-gray-50 p-3 rounded-lg">${r.agenda}</p></div>`:''}</div><div class="flex gap-3"><button onclick="hideRoomDetail()" class="flex-1 btn btn-outline btn-sm">Tutup</button><button onclick="hideRoomDetail();openPinModal('${r.id}')" class="flex-1 btn btn-primary btn-sm">Masukkan PIN</button></div>`;
+            const rdContent = document.getElementById('rdContent');
+            if(!rdContent) return; // FIXED: Return early if element doesn't exist
+            rdContent.innerHTML=`<div class="text-center mb-6"><h3 class="text-xl font-bold">${r.title||'Rapat'}</h3><span class="badge badge-blue mt-3">${tm[r.jenis_rapat]||'Umum'}</span></div><div class="space-y-4 text-sm mb-6"><div class="flex justify-between py-3 border-b"><span class="text-muted">Notulen</span><span class="font-bold">${r.notulen_name||'-'}</span></div><div class="flex justify-between py-3 border-b"><span class="text-muted">Lokasi</span><span class="font-bold">${r.lokasi||'-'}</span></div><div class="flex justify-between py-3 border-b"><span class="text-muted">Mulai</span><span class="font-bold">${fmtFull(r.createdAt)}</span></div>${r.agenda?`<div class="py-3"><span class="text-muted block mb-2">Agenda</span><p class="bg-gray-50 p-3 rounded-lg">${r.agenda}</p></div>`:''}</div><div class="flex gap-3"><button onclick="hideRoomDetail()" class="flex-1 btn btn-outline btn-sm">Tutup</button><button onclick="hideRoomDetail();openPinModal('${r.id}')" class="flex-1 btn btn-primary btn-sm">Masukkan PIN</button></div>`;
             document.getElementById('roomDetailModal').classList.remove('hidden'); document.getElementById('roomDetailModal').classList.add('flex');
         }
         function hideRoomDetail(){document.getElementById('roomDetailModal').classList.add('hidden');document.getElementById('roomDetailModal').classList.remove('flex');}
@@ -1136,58 +1168,137 @@
                 await batch.commit();toast('Rapat dihapus!','success');hideDeleteRoomModal();currentRoomId=null;isNotulen=false;hasUnsaved=false;if(timerInterval)clearInterval(timerInterval);if(unsubRoom)unsubRoom();if(unsubAtt)unsubAtt();if(unsubDocs)unsubDocs();showView('dashboardView');loadDashboard();
             }catch(e){toast(e.message,'error');}
         }
+        // FIXED: Added comprehensive null checks for all elements
         async function enterRoom(rid){
-            currentRoomId=rid;hasUnsaved=false;
-            const doc=await db.collection('rooms').doc(rid).get();if(!doc.exists)return toast('Rapat tidak ditemukan','error');
-            const r=doc.data();r.id=doc.id;if(r.status!=='aktif')return toast('Rapat sudah berakhir','warning');
+            currentRoomId=rid;
+            hasUnsaved=false;
+            
+            // Pastikan view sudah siap dengan pengecekan null
+            const editor = document.getElementById('editor');
+            if(!editor) {
+                console.error('Editor element not found');
+                return;
+            }
+            
+            const doc=await db.collection('rooms').doc(rid).get();
+            if(!doc.exists) return toast('Rapat tidak ditemukan','error');
+            
+            const r=doc.data();
+            r.id=doc.id;
+            if(r.status!=='aktif') return toast('Rapat sudah berakhir','warning');
+            
             isNotulen=r.notulen_id===currentUser.uid;
             const tm={rapat_dosen:'Rapat Dosen',bimbingan_skripsi:'Bimbingan Skripsi',rapat_prodi:'Rapat Prodi',rapat_fakultas:'Rapat Fakultas',riset_pengabdian:'Riset & Pengabdian',koordinasi_akademik:'Koordinasi Akademik',lainnya:'Lainnya'};
-            document.getElementById('rTitle').textContent=r.title;document.getElementById('rNotulen').textContent=r.notulen_name;
-            document.getElementById('rType').textContent=tm[r.jenis_rapat]||'Umum';document.getElementById('rLoc').textContent=r.lokasi||'-';
-            document.getElementById('rStart').textContent=fmtFull(r.createdAt);document.getElementById('rAgenda').textContent=r.agenda||'-';
-            document.getElementById('rAgendaBlock').classList.toggle('hidden',!r.agenda);document.getElementById('rTimer').textContent='00:00:00';document.getElementById('rDuration').textContent='';
-            window._meetStart=r.createdAt.toDate().getTime();if(timerInterval)clearInterval(timerInterval);timerInterval=setInterval(updateTimer,1000);updateTimer();
-            isFocusMode=false;document.body.classList.remove('focus-mode');document.getElementById('focusModeBtn').classList.remove('active');
-            document.getElementById('rEditBtn').classList.toggle('hidden',!isNotulen);
+            
+            // Update UI elements dengan pengecekan null
+            const elements = {
+                'rTitle': r.title,
+                'rNotulen': r.notulen_name,
+                'rType': tm[r.jenis_rapat]||'Umum',
+                'rLoc': r.lokasi||'-',
+                'rStart': fmtFull(r.createdAt),
+                'rAgenda': r.agenda||'-'
+            };
+            
+            for(const [id, value] of Object.entries(elements)){
+                const el = document.getElementById(id);
+                if(el) el.textContent = value;
+            }
+            
+            const agendaBlock = document.getElementById('rAgendaBlock');
+            if(agendaBlock) agendaBlock.classList.toggle('hidden',!r.agenda);
+            
+            const rTimer = document.getElementById('rTimer');
+            const rDuration = document.getElementById('rDuration');
+            if(rTimer) rTimer.textContent='00:00:00';
+            if(rDuration) rDuration.textContent='';
+            window._meetStart=r.createdAt.toDate().getTime();
+            
+            if(timerInterval) clearInterval(timerInterval);
+            timerInterval=setInterval(updateTimer,1000);
+            updateTimer();
+            
+            isFocusMode=false;
+            document.body.classList.remove('focus-mode');
+            const focusBtn = document.getElementById('focusModeBtn');
+            if(focusBtn) focusBtn.classList.remove('active');
+            
+            // Toggle buttons dengan pengecekan
+            const editBtn = document.getElementById('rEditBtn');
+            const docBox = document.getElementById('rDocBox');
+            const pinBox = document.getElementById('rPinBox');
+            const rPin = document.getElementById('rPin');
+            const endBtn = document.getElementById('rEndBtn');
+            const deleteBtn = document.getElementById('rDeleteBtn');
+            const notulenMode = document.getElementById('notulenMode');
+            const viewerMode = document.getElementById('viewerMode');
+            const viewerNotes = document.getElementById('viewerNotes');
+            
+            if(editBtn) editBtn.classList.toggle('hidden',!isNotulen);
+            if(docBox) docBox.classList.toggle('hidden',!isNotulen);
+            
             if(isNotulen){
-                document.getElementById('rPinBox').classList.remove('hidden');document.getElementById('rPin').textContent=r.pin;
-                document.getElementById('rEndBtn').classList.remove('hidden');document.getElementById('rDeleteBtn').classList.remove('hidden');
-                document.getElementById('notulenMode').classList.remove('hidden');document.getElementById('viewerMode').classList.add('hidden');
-                document.getElementById('editor').innerHTML=r.notes||'';lastSavedContent=r.notes||'';
-                document.execCommand('defaultParagraphSeparator',false,'p');updateCounts();
-                document.getElementById('editor').oninput=()=>{updateCounts();markUnsaved();debouncedSave();};
-                loadDocuments(rid); loadAttachments();
+                if(pinBox) pinBox.classList.remove('hidden');
+                if(rPin) rPin.textContent=r.pin;
+                if(endBtn) endBtn.classList.remove('hidden');
+                if(deleteBtn) deleteBtn.classList.remove('hidden');
+                if(notulenMode) notulenMode.classList.remove('hidden');
+                if(viewerMode) viewerMode.classList.add('hidden');
+                
+                editor.innerHTML=r.notes||'';
+                lastSavedContent=r.notes||'';
+                document.execCommand('defaultParagraphSeparator',false,'p');
+                updateCounts();
+                editor.oninput=()=>{updateCounts();markUnsaved();debouncedSave();};
+                
+                // Load documents dan attachments
+                loadDocuments(rid);
+                loadAttachments();
             }else{
-                document.getElementById('rPinBox').classList.add('hidden');document.getElementById('rEndBtn').classList.add('hidden');
-                document.getElementById('rDeleteBtn').classList.add('hidden');
-                document.getElementById('notulenMode').classList.add('hidden');document.getElementById('viewerMode').classList.remove('hidden');
-                document.getElementById('viewerNotes').innerHTML=r.notes||'<p class="text-muted italic">Belum ada notulensi...</p>';
+                if(pinBox) pinBox.classList.add('hidden');
+                if(endBtn) endBtn.classList.add('hidden');
+                if(deleteBtn) deleteBtn.classList.add('hidden');
+                if(notulenMode) notulenMode.classList.add('hidden');
+                if(viewerMode) viewerMode.classList.remove('hidden');
+                if(viewerNotes) viewerNotes.innerHTML=r.notes||'<p class="text-muted italic">Belum ada notulensi...</p>';
                 loadAttachments();
             }
-            showView('roomView');setupListeners(rid);
+            
+            showView('roomView');
+            setupListeners(rid);
         }
         function setupListeners(rid){
             if(unsubRoom)unsubRoom();
             unsubRoom=db.collection('rooms').doc(rid).onSnapshot(doc=>{
                 if(!doc.exists){toast('Rapat dihapus','warning');leaveRoom();return;}
                 const r=doc.data();if(r.status!=='aktif'){toast('Rapat diakhiri','warning');leaveRoom();return;}
-                if(!isNotulen)document.getElementById('viewerNotes').innerHTML=r.notes||'<p class="text-muted italic">Belum ada notulensi...</p>';
+                if(!isNotulen){
+                    const viewerNotes = document.getElementById('viewerNotes');
+                    if(viewerNotes) viewerNotes.innerHTML=r.notes||'<p class="text-muted italic">Belum ada notulensi...</p>';
+                }
             });
             if(unsubAtt)unsubAtt();
             unsubAtt=db.collection('attendance').where('roomId','==',rid).onSnapshot(snap=>{
                 let participants=[];snap.forEach(d=>participants.push({id:d.id,...d.data()}));
                 participants.sort((a,b)=>{if(!a.joinedAt||!b.joinedAt)return 0;return a.joinedAt.toDate()-b.joinedAt.toDate();});
-                document.getElementById('rPCount').textContent=participants.length;
-                const list=document.getElementById('rPList');list.innerHTML='';
-                if(!participants.length){list.innerHTML='<p class="text-xs text-muted text-center py-4 italic">Belum ada peserta</p>';return;}
+                const rPCount = document.getElementById('rPCount');
+                const rPList = document.getElementById('rPList');
+                if(rPCount) rPCount.textContent=participants.length;
+                if(!rPList) return;
+                rPList.innerHTML='';
+                if(!participants.length){rPList.innerHTML='<p class="text-xs text-muted text-center py-4 italic">Belum ada peserta</p>';return;}
                 participants.forEach(a=>{
                     const ir=a.role==='notulen';const name=a.name||'Peserta';
-                    list.innerHTML+=`<div class="flex items-center gap-3 p-2.5 rounded-xl hover:bg-gray-50"><div class="w-8 h-8 ${ir?'bg-brand text-white':'bg-gray-200 text-gray-600'} rounded-full flex items-center justify-center text-[10px] font-bold">${initials(name)}</div><div class="flex-1"><p class="text-xs font-bold truncate">${name}</p><p class="text-[10px] text-muted">${a.joinedAt?fmtT(a.joinedAt):'-'}</p></div>${ir?'<span class="px-2 py-0.5 bg-brand/10 text-brand text-[9px] font-bold">Notulen</span>':'<span class="px-2 py-0.5 bg-green-100 text-green-700 text-[9px] font-bold">Hadir</span>'}</div>`;
+                    rPList.innerHTML+=`<div class="flex items-center gap-3 p-2.5 rounded-xl hover:bg-gray-50"><div class="w-8 h-8 ${ir?'bg-brand text-white':'bg-gray-200 text-gray-600'} rounded-full flex items-center justify-center text-[10px] font-bold">${initials(name)}</div><div class="flex-1"><p class="text-xs font-bold truncate">${name}</p><p class="text-[10px] text-muted">${a.joinedAt?fmtT(a.joinedAt):'-'}</p></div>${ir?'<span class="px-2 py-0.5 bg-brand/10 text-brand text-[9px] font-bold">Notulen</span>':'<span class="px-2 py-0.5 bg-green-100 text-green-700 text-[9px] font-bold">Hadir</span>'}</div>`;
                 });
             });
         }
         function loadDocuments(rid){
-            if(unsubDocs) unsubDocs(); const list = document.getElementById('docList'); list.innerHTML = 'Memuat...';
+            if(!currentRoomId) return;
+            const list = document.getElementById('docList'); 
+            if(!list) return; // FIXED: Return early if element doesn't exist
+            list.innerHTML = 'Memuat...';
+            if(unsubDocs) unsubDocs();
             unsubDocs = db.collection('documents').where('roomId','==',rid).orderBy('createdAt','desc').onSnapshot(snap=>{
                 if(snap.empty){list.innerHTML='<p class="text-center text-muted italic py-2">Belum ada dokumen</p>';return;}
                 list.innerHTML='';snap.forEach(d=>{
@@ -1213,7 +1324,7 @@
         function hideLeaveModal(){document.getElementById('leaveModal').classList.add('hidden');document.getElementById('leaveModal').classList.remove('flex');}
         async function confirmLeave(){hideLeaveModal();if(isNotulen&&hasUnsaved)await db.collection('rooms').doc(currentRoomId).update({notes:document.getElementById('editor').innerHTML});leaveRoom();}
         function leaveRoom(){currentRoomId=null;isNotulen=false;hasUnsaved=false;if(timerInterval)clearInterval(timerInterval);if(unsubRoom)unsubRoom();if(unsubAtt)unsubAtt();if(unsubDocs)unsubDocs();if(unsubAttachments)unsubAttachments();showView('dashboardView');loadDashboard();}
-        async function cleanup(){if(unsubRoom)unsubRoom();if(unsubAtt)unsubAtt();if(unsubDocs)unsubDocs();if(unsubAttachments)unsubAttachments();if(timerInterval)clearInterval(timerInterval);if(isNotulen&&currentRoomId)try{await db.collection('rooms').doc(currentRoomId).update({notes:document.getElementById('editor')?.innerHTML||''});}catch(e){}currentRoomId=null;isNotulen=false;hasUnsaved=false;}
+        async function cleanup(){if(unsubRoom)unsubRoom();if(unsubAtt)unsubAtt();if(unsubDocs)unsubDocs();if(unsubAttachments)unsubAttachments();if(timerInterval)clearInterval(timerInterval);if(isNotulen&&currentRoomId)try{const html=document.getElementById('editor')?.innerHTML||'';await db.collection('rooms').doc(currentRoomId).update({notes:html});}catch(e){}currentRoomId=null;isNotulen=false;hasUnsaved=false;}
         function showEndModal(){document.getElementById('endModal').classList.remove('hidden');document.getElementById('endModal').classList.add('flex');}
         function hideEndModal(){document.getElementById('endModal').classList.add('hidden');document.getElementById('endModal').classList.remove('flex');}
         async function confirmEnd(){hideEndModal();try{if(isNotulen)await db.collection('rooms').doc(currentRoomId).update({notes:document.getElementById('editor')?.innerHTML||'',status:'selesai'});toast('Rapat diakhiri','info');await cleanup();showView('dashboardView');loadDashboard();}catch(e){toast(e.message,'error');}}
@@ -1221,16 +1332,51 @@
             const doc=await db.collection('rooms').doc(rid).get();if(!doc.exists)return toast('Rapat tidak ditemukan','error');
             const r=doc.data();r.id=doc.id;currentRoomId=rid;isNotulen=false;
             const tm={rapat_dosen:'Rapat Dosen',bimbingan_skripsi:'Bimbingan Skripsi',rapat_prodi:'Rapat Prodi',rapat_fakultas:'Rapat Fakultas',riset_pengabdian:'Riset & Pengabdian',koordinasi_akademik:'Koordinasi Akademik',lainnya:'Lainnya'};
-            document.getElementById('rTitle').textContent=r.title;document.getElementById('rNotulen').textContent=r.notulen_name;
-            document.getElementById('rType').textContent=tm[r.jenis_rapat]||'Umum';document.getElementById('rLoc').textContent=r.lokasi||'-';
-            document.getElementById('rStart').textContent=fmtFull(r.createdAt);document.getElementById('rAgenda').textContent=r.agenda||'-';
-            document.getElementById('rAgendaBlock').classList.toggle('hidden',!r.agenda);
-            document.getElementById('rPinBox').classList.add('hidden');document.getElementById('rEndBtn').classList.add('hidden');
-            document.getElementById('rEditBtn').classList.add('hidden');document.getElementById('rDeleteBtn').classList.add('hidden');
-            document.getElementById('notulenMode').classList.add('hidden');document.getElementById('viewerMode').classList.remove('hidden');
-            document.getElementById('rTimer').textContent='00:00:00';document.getElementById('rDuration').textContent='';
-            document.getElementById('viewerNotes').innerHTML=r.notes||'<p class="text-muted italic">Tidak ada notulensi.</p>';
-            if(timerInterval)clearInterval(timerInterval);if(unsubAtt)unsubAtt();if(unsubAttachments)unsubAttachments();showView('roomView');loadAttachments();
+            
+            // FIXED: Added null checks for all elements
+            const elements = {
+                'rTitle': r.title,
+                'rNotulen': r.notulen_name,
+                'rType': tm[r.jenis_rapat]||'Umum',
+                'rLoc': r.lokasi||'-',
+                'rStart': fmtFull(r.createdAt),
+                'rAgenda': r.agenda||'-'
+            };
+            
+            for(const [id, value] of Object.entries(elements)){
+                const el = document.getElementById(id);
+                if(el) el.textContent = value;
+            }
+            
+            const agendaBlock = document.getElementById('rAgendaBlock');
+            if(agendaBlock) agendaBlock.classList.toggle('hidden',!r.agenda);
+            
+            const rPinBox = document.getElementById('rPinBox');
+            const rEndBtn = document.getElementById('rEndBtn');
+            const rEditBtn = document.getElementById('rEditBtn');
+            const rDeleteBtn = document.getElementById('rDeleteBtn');
+            const notulenMode = document.getElementById('notulenMode');
+            const viewerMode = document.getElementById('viewerMode');
+            const rTimer = document.getElementById('rTimer');
+            const rDuration = document.getElementById('rDuration');
+            
+            if(rPinBox) rPinBox.classList.add('hidden');
+            if(rEndBtn) rEndBtn.classList.add('hidden');
+            if(rEditBtn) rEditBtn.classList.add('hidden');
+            if(rDeleteBtn) rDeleteBtn.classList.add('hidden');
+            if(notulenMode) notulenMode.classList.add('hidden');
+            if(viewerMode) viewerMode.classList.remove('hidden');
+            if(rTimer) rTimer.textContent='00:00:00';
+            if(rDuration) rDuration.textContent='';
+            
+            const viewerNotes = document.getElementById('viewerNotes');
+            if(viewerNotes) viewerNotes.innerHTML=r.notes||'<p class="text-muted italic">Tidak ada notulensi.</p>';
+            
+            if(timerInterval)clearInterval(timerInterval);
+            if(unsubAtt)unsubAtt();
+            if(unsubAttachments)unsubAttachments();
+            showView('roomView');
+            loadAttachments();
         }
         function copyPin(){navigator.clipboard.writeText(document.getElementById('rPin').textContent).then(()=>toast('PIN disalin!','success'));}
         async function exportCSV(){
@@ -1245,3 +1391,4 @@
     </script>
 </body>
 </html>
+
