@@ -615,13 +615,21 @@
         const auth = firebase.auth();
         const db = firebase.firestore();
 
-        // SUPABASE CONFIG (TAMBAHAN BARU)
-        // Ganti SUPABASE_ANON_KEY dengan Key dari project Supabase Anda
+        // SUPABASE CONFIG (AUTO-FILLED)
         const SUPABASE_URL = 'https://whtmgsqgcahnfuexrumf.supabase.co'; 
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndodG1nc3FnY2FobmZ1ZXhydW1mIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyOTkzNTUsImV4cCI6MjA5MDg3NTM1NX0.BPqnl6SSO6mY4Lxvfpbb8qej8sW8IiOKG4xXG10kwAs'; 
         
-        // Inisialisasi Client Supabase
-        const supabase = window.supabase.createClient(https://whtmgsqgcahnfuexrumf.supabase.co, eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndodG1nc3FnY2FobmZ1ZXhydW1mIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyOTkzNTUsImV4cCI6MjA5MDg3NTM1NX0.BPqnl6SSO6mY4Lxvfpbb8qej8sW8IiOKG4xXG10kwAs);
+        // Inisialisasi Client Supabase dengan Pengaman
+        let supabaseClient = null;
+        try {
+            if (typeof window.supabase !== 'undefined') {
+                supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            } else {
+                console.warn("Supabase CDN not loaded. File features disabled.");
+            }
+        } catch (err) {
+            console.error("Supabase Init Error:", err);
+        }
 
         // ===================== STATE =====================
         let currentUser=null, currentRoomId=null, isNotulen=false;
@@ -880,8 +888,10 @@
             const fileName = `public/${currentUser.uid}.${fileExt}`;
 
             try {
+                if (!supabaseClient) throw new Error("Supabase tidak terkoneksi");
+
                 // Upload ke Supabase
-                const { data, error } = await supabase
+                const { data, error } = await supabaseClient
                     .storage
                     .from('profile-photos')
                     .upload(fileName, file, { upsert: true });
@@ -889,7 +899,7 @@
                 if(error) throw error;
 
                 // Get Public URL
-                const {  publicUrlData } = supabase
+                const {  publicUrlData } = supabaseClient
                     .storage
                     .from('profile-photos')
                     .getPublicUrl(fileName);
@@ -919,8 +929,10 @@
             const filePath = `${currentRoomId}/${fileName}`;
 
             try {
+                if (!supabaseClient) throw new Error("Supabase tidak terkoneksi");
+
                 // Upload ke Supabase
-                const { data, error } = await supabase
+                const { data, error } = await supabaseClient
                     .storage
                     .from('meeting-docs')
                     .upload(filePath, file);
@@ -928,7 +940,7 @@
                 if(error) throw error;
 
                 // Get Public URL
-                const {  publicUrlData } = supabase
+                const {  publicUrlData } = supabaseClient
                     .storage
                     .from('meeting-docs')
                     .getPublicUrl(filePath);
