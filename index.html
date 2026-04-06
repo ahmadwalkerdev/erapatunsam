@@ -6,10 +6,11 @@
     <title>ERapatUnsam</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/fontsource-inter@5.1.1/index.css" rel="stylesheet">
+    <!-- Supabase JS v2 CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
         tailwind.config = {
             theme: {
@@ -58,8 +59,6 @@
         .note-editor { padding:28px 36px; outline:none; line-height:1.75; color:#1f2937; font-family:'Inter',sans-serif; font-size:15px; flex:1; overflow-y:auto; }
         .note-editor:empty::before { content:attr(data-placeholder); color:#9ca3af; font-style:italic; pointer-events:none; }
         .note-editor p { margin-bottom:8px; }
-        
-        /* Image Wrapper Styles (Microsoft Office Style) */
         .note-editor .img-wrapper { display:inline-block; position:relative; margin:4px 0; cursor:pointer; }
         .note-editor .img-wrapper img { display:block; max-width:100%; height:auto; border-radius:4px; }
         .note-editor .img-wrapper.selected { outline:2px solid #2563eb; outline-offset:2px; }
@@ -74,13 +73,6 @@
         .note-editor .img-wrapper .resize-handle.s { bottom:-6px; left:50%; transform:translateX(-50%); cursor:s-resize; }
         .note-editor .img-wrapper .resize-handle.e { right:-6px; top:50%; transform:translateY(-50%); cursor:e-resize; }
         .note-editor .img-wrapper .resize-handle.w { left:-6px; top:50%; transform:translateY(-50%); cursor:w-resize; }
-        
-        /* Image floating modes */
-        .note-editor .img-wrapper.float-left { float:left; margin:0 12px 8px 0; }
-        .note-editor .img-wrapper.float-right { float:right; margin:0 0 8px 12px; }
-        .note-editor .img-wrapper.float-center { display:block; margin:0 auto 8px; text-align:center; }
-        .note-editor br.clear { clear:both; }
-        
         .activity-item { padding:8px 0; border-bottom:1px solid #f3f4f6; }
         .activity-item:last-child { border-bottom:none; }
         ::-webkit-scrollbar { width:6px; } ::-webkit-scrollbar-track { background:transparent; } ::-webkit-scrollbar-thumb { background:#cbd5e1; border-radius:2px; }
@@ -383,10 +375,23 @@
         const auth = firebase.auth();
         const db = firebase.firestore();
 
+        // Supabase Configuration - FIXED INITIALIZATION
         const SUPABASE_URL = 'https://whtmgsqgcahnfuexrumf.supabase.co'; 
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndodG1nc3FnY2FobmZ1ZXhydW1mIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyOTkzNTUsImV4cCI6MjA5MDg3NTM1NX0.BPqnl6SSO6mY4Lxvfpbb8qej8sW8IiOKG4xXG10kwAs'; 
-        let supabaseClient = null;
-        try { if (typeof window.supabase !== 'undefined') supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY); } catch (err) { console.error("Supabase Init Error:", err); }
+        
+        // Initialize Supabase client with proper error handling
+        let supabaseClient;
+        try {
+            if (typeof supabase !== 'undefined') {
+                supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            } else if (typeof window.supabase !== 'undefined') {
+                supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            } else {
+                console.error('Supabase library not loaded');
+            }
+        } catch (err) {
+            console.error("Supabase Init Error:", err);
+        }
 
         let currentUser=null, currentRoomId=null, isNotulen=false;
         let unsubRoom=null, unsubAtt=null, unsubAttachments=null;
@@ -441,7 +446,6 @@
         function applyFontSize(val) { 
             if(!val) return; 
             document.execCommand('fontSize', false, val); 
-            // Convert font size to pt-like styling
             const sizes = document.getElementById('editor').querySelectorAll('font[size]');
             sizes.forEach(f => {
                 const sizeMap = {'1':'12px','2':'15px','3':'18px','4':'24px','5':'32px'};
@@ -451,11 +455,11 @@
             document.getElementById('editor').focus(); 
         }
         
-        // Image Insert Function (Microsoft Office Style)
         function triggerImageUpload() { 
             document.getElementById('editorImageInput').click(); 
         }
         
+        // FIXED: Proper image upload with error handling
         async function handleEditorImageInsert(event) {
             const files = Array.from(event.target.files);
             if(!files.length || !currentRoomId) return;
@@ -463,16 +467,33 @@
             const editor = document.getElementById('editor');
             editor.focus();
             
+            // Check if Supabase is initialized
+            if (!supabaseClient) {
+                toast('Supabase tidak terinisialisasi. Periksa konfigurasi.', 'error');
+                return;
+            }
+            
             for(const file of files){
                 if(!file.type.startsWith('image/')) continue;
                 try{
-                    // Save to Supabase
                     const path = `attachments/${currentRoomId}/images/${Date.now()}_${file.name}`;
-                    const { error: uploadError } = await supabaseClient.storage.from('meeting-docs').upload(path, file);
-                    if(uploadError) throw uploadError;
                     
+                    // Upload file
+                    const { error: uploadError } = await supabaseClient.storage.from('meeting-docs').upload(path, file);
+                    if(uploadError) {
+                        console.error('Upload error:', uploadError);
+                        throw new Error(`Upload gagal: ${uploadError.message}`);
+                    }
+                    
+                    // Get public URL
                     const {  urlData, error: urlError } = supabaseClient.storage.from('meeting-docs').getPublicUrl(path);
-                    if(urlError) throw urlError;
+                    if(urlError) {
+                        console.error('Get URL error:', urlError);
+                        throw new Error(`Gagal mendapatkan URL: ${urlError.message}`);
+                    }
+                    if(!urlData || !urlData.publicUrl) {
+                        throw new Error('URL tidak valid');
+                    }
                     
                     const fileUrl = urlData.publicUrl;
                     
@@ -493,17 +514,18 @@
                     await db.collection('rooms').doc(currentRoomId).update({notes:editor.innerHTML});
                     
                     toast('Gambar disisipkan','success');
-                }catch(e){ console.error('Image upload error:', e); toast('Gagal upload: ' + e.message, 'error'); }
+                }catch(e){ 
+                    console.error('Image upload error:', e); 
+                    toast('Gagal upload: ' + e.message, 'error'); 
+                }
             }
             event.target.value='';
         }
         
-        // Initialize image manipulation on editor
         function initImageManipulation() {
             const editor = document.getElementById('editor');
             if(!editor) return;
             
-            // Click to select image
             editor.addEventListener('click', (e) => {
                 const wrapper = e.target.closest('.img-wrapper');
                 if(wrapper) {
@@ -514,14 +536,12 @@
                 }
             });
             
-            // Click outside to deselect
             document.addEventListener('click', (e) => {
                 if(selectedImageWrapper && !editor.contains(e.target)) {
                     deselectImageWrapper();
                 }
             });
             
-            // Drag and resize
             editor.addEventListener('mousedown', (e) => {
                 if(!selectedImageWrapper) return;
                 
@@ -565,7 +585,6 @@
                     if(resizeDirection.includes('n')) {
                         img.style.height = Math.max(50, imgStartHeight - dy) + 'px';
                     }
-                    // Keep aspect ratio for corner resizing
                     if(resizeDirection === 'se' || resizeDirection === 'nw') {
                         const ratio = imgStartHeight / imgStartWidth;
                         const newWidth = Math.max(50, imgStartWidth + dx);
@@ -594,7 +613,6 @@
                 if(isResizingImage || isDraggingImage) {
                     isResizingImage = false;
                     isDraggingImage = false;
-                    // Save after manipulation
                     if(selectedImageWrapper) {
                         lastSavedContent = editor.innerHTML;
                         debouncedSave();
@@ -602,7 +620,6 @@
                 }
             });
             
-            // Delete selected image with Delete/Backspace key
             editor.addEventListener('keydown', (e) => {
                 if(selectedImageWrapper && (e.key === 'Delete' || e.key === 'Backspace')) {
                     e.preventDefault();
@@ -610,7 +627,6 @@
                     const parent = wrapper.parentNode;
                     wrapper.remove();
                     deselectImageWrapper();
-                    // Place cursor after deleted image
                     if(parent) {
                         const range = document.createRange();
                         range.setStartAfter(parent);
@@ -626,7 +642,6 @@
         }
         
         function selectImageWrapper(wrapper) {
-            // Deselect previous
             if(selectedImageWrapper) {
                 selectedImageWrapper.classList.remove('selected');
                 const oldHandles = selectedImageWrapper.querySelectorAll('.resize-handle');
@@ -636,7 +651,6 @@
             selectedImageWrapper = wrapper;
             wrapper.classList.add('selected');
             
-            // Add resize handles
             const directions = ['nw','n','ne','w','e','sw','s','se'];
             directions.forEach(dir => {
                 const handle = document.createElement('div');
@@ -696,11 +710,15 @@
             modal.style.display = 'none'; document.body.style.overflow = '';
         }
         
-        // Attachment upload
         async function handleAttachmentUpload(event) {
             const files = Array.from(event.target.files);
             if(!files.length || !currentRoomId) return;
             const list = document.getElementById('attachmentList');
+            
+            if (!supabaseClient) {
+                toast('Supabase tidak terinisialisasi.', 'error');
+                return;
+            }
             
             for(const file of files){
                 try{
@@ -765,14 +783,6 @@
                 await db.collection('attachments').doc(docId).delete();
                 toast('Lampiran dihapus','success');
             }catch(e){ toast('Gagal menghapus','error'); }
-        }
-        function getFileIconClass(fileType){
-            if(!fileType) return 'doc';
-            if(fileType.includes('pdf')) return 'pdf';
-            if(fileType.includes('word') || fileType.includes('document')) return 'word';
-            if(fileType.includes('excel') || fileType.includes('spreadsheet')) return 'excel';
-            if(fileType.includes('powerpoint') || fileType.includes('presentation')) return 'ppt';
-            return 'doc';
         }
 
         async function handleLogin(){
