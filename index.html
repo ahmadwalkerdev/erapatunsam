@@ -1,25 +1,9 @@
-
-                        <!DOCTYPE html>
-                        <html lang="en">
-                        <head>
-                            <meta charset="UTF-8">
-                            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-              <style>
-                body {
-                  background-color: white; /* Ensure the iframe has a white background */
-                }
-
-                
-              </style>
-                        </head>
-                        <body>
-                            <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>ERapatUnsam</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/fontsource-inter@5.1.1/index.css" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
@@ -55,7 +39,6 @@
         .toast.success { background:#111827; color:#fff; }
         .toast.error { background:#ef4444; color:#fff; }
         .toast.info { background:#2563eb; color:#fff; }
-        .toast.warning { background:#f59e0b; color:#fff; }
         @keyframes toastIn { from{transform:translateY(-20px);opacity:0} to{transform:translateY(0);opacity:1} }
         @keyframes toastOut { from{transform:translateY(0);opacity:1} to{transform:translateY(-20px);opacity:0} }
         .modal-overlay { background:rgba(0,0,0,0.5); backdrop-filter:blur(8px); }
@@ -64,64 +47,44 @@
         .spinner { border:2px solid #e5e7eb; border-top-color:#2563eb; border-radius:50%; width:16px; height:16px; animation: spin 0.6s linear infinite; display:inline-block; }
         @keyframes spin { to{transform:rotate(360deg)} }
         .card { background:#fff; border:1px solid #e5e7eb; border-radius:16px; transition:all 0.2s ease; }
-        .card-hover:hover { border-color:#d1d5db; box-shadow:0 10px 25px -5px rgba(0,0,0,0.05); transform:translateY(-2px); }
+        .card-hover:hover { border-color:#d1d5db; box-shadow:0 4px 12px rgba(0,0,0,0.04); transform:translateY(-1px); }
+        .card:active { transform:scale(0.98); }
         .editor-wrapper { background:#fff; border:1px solid #e5e7eb; border-radius:16px; overflow:hidden; display:flex; flex-direction:column; height:calc(100vh - 190px); position:relative; }
         .note-toolbar { position:sticky; top:0; z-index:10; background:rgba(255,255,255,0.95); backdrop-filter:blur(12px); border-bottom:1px solid rgba(229,231,235,0.6); padding:8px 12px; display:flex; gap:4px; align-items:center; flex-wrap:wrap; }
         .tool-btn { padding:6px; border-radius:6px; font-size:13px; font-weight:500; transition:all 0.12s; min-width:28px; min-height:28px; display:inline-flex; align-items:center; justify-content:center; color:#4b5563; cursor:pointer; border:none; background:transparent; }
         .tool-btn:hover { background:#f3f4f6; color:#111827; }
         .tool-btn.active { background:#2563eb; color:#fff; }
         .tool-sep { width:1px; height:20px; background:#e5e7eb; margin:0 4px; }
-        .note-editor { padding:28px 36px; outline:none; line-height:1.75; color:#1f2937; font-family:'Inter',sans-serif; font-size:15px; flex:1; overflow-y:auto; caret-color:#2563eb; }
+        .note-editor { padding:28px 36px; outline:none; line-height:1.75; color:#1f2937; font-family:'Inter',sans-serif; font-size:15px; flex:1; overflow-y:auto; }
         .note-editor:empty::before { content:attr(data-placeholder); color:#9ca3af; font-style:italic; pointer-events:none; }
-        .note-editor img { max-width:100%; height:auto; border-radius:8px; margin:8px 0; display:block; }
-        .note-editor a { color:#2563eb; text-decoration:underline; font-weight:500; }
-        .note-editor h1 { font-size:28px; font-weight:700; margin:20px 0 10px; }
-        .note-editor h2 { font-size:22px; font-weight:600; margin:16px 0 8px; }
-        .note-editor ul { list-style:disc; padding-left:24px; margin-bottom:10px; }
-        .note-editor ol { list-style:decimal; padding-left:24px; margin-bottom:10px; }
-        .note-editor.transform-active img { outline: 2px dashed #2563eb !important; cursor: grab; position: relative; }
-        .note-editor.transform-active img:active { cursor: grabbing; }
-        .note-editor.transform-active img::after { content: ''; position: absolute; bottom: -6px; right: -6px; width: 12px; height: 12px; background: #2563eb; border: 2px solid white; border-radius: 50%; box-shadow: 0 1px 3px rgba(0,0,0,0.2); cursor: nwse-resize; z-index: 10; }
-        .attachment-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
-        .attachment-title { font-size:13px; font-weight:600; color:#111827; display:flex; align-items:center; gap:6px; }
-        .attachment-title svg { width:16px; height:16px; }
-        .thumbnail-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(80px,1fr)); gap:10px; }
-        .thumbnail-item { position:relative; aspect-ratio:1; border-radius:8px; overflow:hidden; cursor:pointer; border:2px solid #e5e7eb; transition:all 0.2s; background:#f9fafb; }
-        .thumbnail-item:hover { border-color:#2563eb; transform:translateY(-2px); box-shadow:0 4px 12px rgba(0,0,0,0.1); }
-        .thumbnail-item img { width:100%; height:100%; object-fit:cover; }
-        .thumbnail-overlay { position:absolute; inset:0; background:rgba(0,0,0,0.5); display:flex; align-items:center; justify-content:center; opacity:0; transition:opacity 0.2s; }
-        .thumbnail-item:hover .thumbnail-overlay { opacity:1; }
-        .thumbnail-overlay svg { width:20px; height:20px; color:#fff; }
-        .doc-list { display:flex; flex-direction:column; gap:8px; }
-        .doc-item { display:flex; align-items:center; gap:10px; padding:10px; background:#f9fafb; border-radius:8px; border:1px solid #e5e7eb; transition:all 0.2s; }
-        .doc-item:hover { background:#f3f4f6; border-color:#d1d5db; }
-        .doc-icon { width:36px; height:36px; background:#fff; border-radius:6px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
-        .doc-icon.pdf { color:#ef4444; background:#fef2f2; }
-        .doc-icon.word { color:#3b82f6; background:#eff6ff; }
-        .doc-icon.excel { color:#10b981; background:#ecfdf5; }
-        .doc-icon.ppt { color:#f59e0b; background:#fffbeb; }
-        .doc-icon svg { width:18px; height:18px; }
-        .doc-info { flex:1; min-width:0; }
-        .doc-name { font-weight:600; color:#111827; font-size:12px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-        .doc-meta { font-size:10px; color:#6b7280; margin-top:2px; }
-        .doc-actions { display:flex; gap:6px; }
-        .doc-btn { padding:4px 10px; border-radius:6px; font-size:11px; font-weight:600; cursor:pointer; border:none; transition:all 0.2s; }
-        .doc-btn-primary { background:#2563eb; color:#fff; }
-        .doc-btn-primary:hover { background:#1d4ed8; }
-        .image-preview-modal { display:none; position:fixed; inset:0; z-index:1000; background:rgba(0,0,0,0.9); backdrop-filter:blur(8px); align-items:center; justify-content:center; }
-        .image-preview-modal.active { display:flex; }
-        .image-preview-content { position:relative; max-width:95vw; max-height:95vh; }
-        .image-preview-content img { max-width:100%; max-height:90vh; object-fit:contain; border-radius:8px; box-shadow:0 20px 40px rgba(0,0,0,0.3); }
-        .image-preview-close { position:absolute; top:-50px; right:0; background:#fff; color:#111827; border:none; width:44px; height:44px; border-radius:50%; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:24px; font-weight:bold; transition:all 0.2s; box-shadow:0 4px 12px rgba(0,0,0,0.2); }
-        .image-preview-close:hover { background:#f3f4f6; transform:rotate(90deg); }
-        .image-preview-caption { position:absolute; bottom:-40px; left:0; right:0; text-align:center; color:#fff; font-size:13px; font-weight:500; text-shadow:0 1px 3px rgba(0,0,0,0.5); }
-        .color-popover { display:none; position:absolute; top:44px; background:#fff; border:1px solid #e5e7eb; border-radius:14px; padding:10px; box-shadow:0 10px 25px -5px rgba(0,0,0,0.15); z-index:20; width:150px; }
-        .color-popover.active { display:block; animation:scaleIn 0.15s; }
-        .color-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; }
-        .color-dot { width:36px; height:36px; border-radius:50%; cursor:pointer; border:2px solid transparent; transition:transform 0.15s; position:relative; }
-        .color-dot:hover { transform:scale(1.15); }
-        .color-dot::after { content:''; position:absolute; inset:0; border-radius:50%; border:2px solid rgba(255,255,255,0.6); }
+        .note-editor p { margin-bottom:8px; }
+        
+        /* Image Wrapper Styles (Microsoft Office Style) */
+        .note-editor .img-wrapper { display:inline-block; position:relative; margin:4px 0; cursor:pointer; }
+        .note-editor .img-wrapper img { display:block; max-width:100%; height:auto; border-radius:4px; }
+        .note-editor .img-wrapper.selected { outline:2px solid #2563eb; outline-offset:2px; }
+        .note-editor .img-wrapper.selected img { opacity:0.85; }
+        .note-editor .img-wrapper .resize-handle { display:none; position:absolute; width:12px; height:12px; background:#2563eb; border:2px solid #fff; border-radius:2px; box-shadow:0 1px 3px rgba(0,0,0,0.3); z-index:10; }
+        .note-editor .img-wrapper.selected .resize-handle { display:block; }
+        .note-editor .img-wrapper .resize-handle.nw { top:-6px; left:-6px; cursor:nw-resize; }
+        .note-editor .img-wrapper .resize-handle.ne { top:-6px; right:-6px; cursor:ne-resize; }
+        .note-editor .img-wrapper .resize-handle.sw { bottom:-6px; left:-6px; cursor:sw-resize; }
+        .note-editor .img-wrapper .resize-handle.se { bottom:-6px; right:-6px; cursor:se-resize; }
+        .note-editor .img-wrapper .resize-handle.n { top:-6px; left:50%; transform:translateX(-50%); cursor:n-resize; }
+        .note-editor .img-wrapper .resize-handle.s { bottom:-6px; left:50%; transform:translateX(-50%); cursor:s-resize; }
+        .note-editor .img-wrapper .resize-handle.e { right:-6px; top:50%; transform:translateY(-50%); cursor:e-resize; }
+        .note-editor .img-wrapper .resize-handle.w { left:-6px; top:50%; transform:translateY(-50%); cursor:w-resize; }
+        
+        /* Image floating modes */
+        .note-editor .img-wrapper.float-left { float:left; margin:0 12px 8px 0; }
+        .note-editor .img-wrapper.float-right { float:right; margin:0 0 8px 12px; }
+        .note-editor .img-wrapper.float-center { display:block; margin:0 auto 8px; text-align:center; }
+        .note-editor br.clear { clear:both; }
+        
+        .activity-item { padding:8px 0; border-bottom:1px solid #f3f4f6; }
+        .activity-item:last-child { border-bottom:none; }
         ::-webkit-scrollbar { width:6px; } ::-webkit-scrollbar-track { background:transparent; } ::-webkit-scrollbar-thumb { background:#cbd5e1; border-radius:2px; }
+        :focus-visible { outline:2px solid #2563eb; outline-offset:2px; }
         .focus-mode .sidebar-col { display:none; }
         .focus-mode .editor-wrapper { height:calc(100vh - 150px); }
         .badge { display:inline-flex; align-items:center; padding:3px 8px; border-radius:20px; font-size:11px; font-weight:600; }
@@ -147,11 +110,11 @@
     <div id="toastContainer"></div>
     
     <!-- Image Preview Modal -->
-    <div id="imagePreviewModal" class="image-preview-modal" onclick="closeImagePreview(event)">
-        <div class="image-preview-content" onclick="event.stopPropagation()">
-            <button class="image-preview-close" onclick="closeImagePreview()">×</button>
-            <img id="previewImage" src="" alt="Preview">
-            <div class="image-preview-caption" id="previewCaption"></div>
+    <div id="imagePreviewModal" style="display:none;position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,0.9);backdrop-filter:blur(8px);align-items:center;justify-content:center;" onclick="closeImagePreview(event)">
+        <div style="position:relative;max-width:95vw;max-height:95vh;" onclick="event.stopPropagation()">
+            <button onclick="closeImagePreview()" style="position:absolute;top:-50px;right:0;background:#fff;color:#111;border:none;width:44px;height:44px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:bold;transition:all 0.2s;box-shadow:0 4px 12px rgba(0,0,0,0.2);">×</button>
+            <img id="previewImage" src="" alt="Preview" style="max-width:100%;max-height:90vh;object-fit:contain;border-radius:8px;box-shadow:0 20px 40px rgba(0,0,0,0.3);">
+            <div id="previewCaption" style="position:absolute;bottom:-40px;left:0;right:0;text-align:center;color:#fff;font-size:13px;font-weight:500;text-shadow:0 1px 3px rgba(0,0,0,0.5);"></div>
         </div>
     </div>
 
@@ -231,7 +194,7 @@
                 <div class="mb-4 flex items-center justify-between"><h2 class="text-sm font-bold text-gray-900 uppercase tracking-wider">Rapat Berlangsung</h2><span id="activeCount" class="badge badge-green">0</span></div>
                 <div id="activeRoomsList" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8"></div>
                 <div class="mb-4 flex items-center justify-between"><h2 class="text-sm font-bold text-gray-900 uppercase tracking-wider">Riwayat Rapat</h2><span id="recentCount" class="badge badge-gray">0</span></div>
-                <div id="recentRoomsList" class="space-y-3"></div>
+                <div id="recentRoomsList" class="space-y-2"></div>
             </div>
             <div class="lg:col-span-1 space-y-4">
                 <div class="card p-5"><h3 class="text-xs font-bold text-gray-900 mb-4 flex items-center gap-2 uppercase tracking-wider"><svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>Aktivitas Terkini</h3><div id="activityFeed" class="space-y-3 text-xs text-muted max-h-48 overflow-y-auto pr-1"><div class="text-center py-4 text-gray-400 italic">Menunggu aktivitas...</div></div></div>
@@ -247,7 +210,7 @@
 
     <!-- ============ SETTINGS ============ -->
     <div id="settingsView" class="view min-h-screen flex-col bg-surface">
-        <nav class="bg-white/80 backdrop-blur-xl border-b border-gray-100 sticky top-0 z-40"><div class="max-w-6xl mx-auto px-6 py-3 flex items-center justify-between"><div class="flex items-center gap-3"><button onclick="backToDashboard()" class="p-2 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-xl transition-all"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg></button><h1 class="font-bold text-gray-900 text-lg">Pengaturan Akun</h1></div><button onclick="backToDashboard()" class="btn btn-ghost btn-sm">Kembali</button></div></nav>
+        <nav class="bg-white/80 backdrop-blur-xl border-b border-gray-100 sticky top-0 z-40"><div class="max-w-6xl mx-auto px-6 py-3 flex items-center justify-between"><div class="flex items-center gap-3"><button onclick="backToDashboard()" class="p-2 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-xl transition-all"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg></button><h1 class="font-bold text-gray-900 text-lg">Pengaturan Akun</h1></div><button onclick="backToDashboard()" class="btn btn-ghost btn-sm">Tutup</button></div></nav>
         <main class="flex-1 max-w-6xl mx-auto w-full px-6 py-8">
             <div class="flex flex-col lg:flex-row gap-8">
                 <div class="lg:w-64 flex-shrink-0">
@@ -295,44 +258,46 @@
     </div>
 
     <!-- ============ DELETE ACCOUNT MODAL ============ -->
-    <div id="deleteModal" class="hidden fixed inset-0 z-[100] items-center justify-center p-4"><div class="modal-overlay absolute inset-0" onclick="hideDeleteModal()"></div><div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm p-8 scale-in text-center"><div class="w-16 h-16 bg-red-50 rounded-2xl flex items-center justify-center mx-auto mb-6"><svg class="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg></div><h3 class="text-xl font-bold text-gray-900 mb-2">Hapus Akun?</h3><p class="text-sm text-gray-500 mb-6">Ketik email untuk konfirmasi</p><input id="delEmail" type="email" placeholder="Email Anda" class="input mb-6"><div class="flex gap-3"><button onclick="hideDeleteModal()" class="flex-1 btn btn-outline btn-sm">Batal</button><button onclick="confirmDelete()" class="flex-1 btn btn-red btn-sm">Hapus</button></div></div></div>
+    <div id="deleteModal" class="hidden fixed inset-0 z-[100] items-center justify-center p-4"><div class="modal-overlay absolute inset-0" onclick="hideDeleteModal()"></div><div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 scale-in"><div class="text-center"><h3 class="text-lg font-bold mb-2">Hapus Akun?</h3><p class="text-sm text-muted mb-4">Ketik email untuk konfirmasi.</p><input id="delEmail" type="email" placeholder="Email Anda" class="input mb-4"><div class="flex gap-2"><button onclick="hideDeleteModal()" class="btn btn-outline flex-1">Batal</button><button onclick="confirmDelete()" class="btn btn-red flex-1">Hapus</button></div></div></div></div>
 
     <!-- ============ PIN MODAL ============ -->
-    <div id="pinModal" class="hidden fixed inset-0 z-[100] items-end sm:items-center justify-center"><div class="modal-overlay absolute inset-0" onclick="hidePinModal()"></div><div class="relative bg-white rounded-t-3xl sm:rounded-2xl shadow-2xl w-full max-w-sm p-8 slide-up bottom-sheet"><div class="w-12 h-1.5 bg-gray-200 rounded-full mx-auto mb-8 sm:hidden"></div><button onclick="hidePinModal()" class="absolute top-6 right-6 p-2 text-gray-400 hover:text-gray-600 rounded-xl hover:bg-gray-100 transition-all"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button><div class="text-center mb-8"><div class="w-16 h-16 bg-brand/10 rounded-2xl flex items-center justify-center mx-auto mb-4"><svg class="w-8 h-8 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg></div><h3 class="text-xl font-bold text-gray-900">Masukkan PIN</h3><p class="text-sm text-gray-500 mt-2">Dapatkan PIN dari notulen</p></div><div class="flex justify-center gap-3 mb-8"><input id="p0" class="pin-digit" maxlength="1" inputmode="numeric" oninput="pinInput(0)" onkeydown="pinKey(event,0)"><input id="p1" class="pin-digit" maxlength="1" inputmode="numeric" oninput="pinInput(1)" onkeydown="pinKey(event,1)"><input id="p2" class="pin-digit" maxlength="1" inputmode="numeric" oninput="pinInput(2)" onkeydown="pinKey(event,2)"><input id="p3" class="pin-digit" maxlength="1" inputmode="numeric" oninput="pinInput(3)" onkeydown="pinKey(event,3)"><input id="p4" class="pin-digit" maxlength="1" inputmode="numeric" oninput="pinInput(4)" onkeydown="pinKey(event,4)"><input id="p5" class="pin-digit" maxlength="1" inputmode="numeric" oninput="pinInput(5)" onkeydown="pinKey(event,5)"></div><button onclick="submitPin()" class="btn btn-primary btn-full shadow-lg shadow-brand/20"><span id="pinBtnText">Masuk Rapat</span><div id="pinSpinner" class="spinner hidden" style="border-top-color:#fff;border-color:rgba(255,255,255,0.3)"></div></button><div id="pinError" class="mt-4 text-center text-red-500 text-xs font-medium hidden"></div></div></div>
+    <div id="pinModal" class="hidden fixed inset-0 z-[100] items-end sm:items-center justify-center"><div class="modal-overlay absolute inset-0" onclick="hidePinModal()"></div><div class="relative bg-white rounded-t-3xl sm:rounded-2xl shadow-2xl w-full max-w-sm p-6 slide-up bottom-sheet"><div class="w-10 h-1 bg-gray-200 rounded-full mx-auto mb-5 sm:hidden"></div><button onclick="hidePinModal()" class="absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-600 rounded-xl hover:bg-gray-100 transition-all"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button><div class="text-center mb-6"><div class="w-12 h-12 bg-brand/10 rounded-2xl flex items-center justify-center mx-auto mb-3"><svg class="w-6 h-6 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg></div><h3 class="text-lg font-bold">Masukkan PIN</h3><p class="text-sm text-muted mt-1">Dapatkan PIN dari notulen</p></div><div class="flex justify-center gap-2.5 mb-6"><input id="p0" class="pin-digit" maxlength="1" inputmode="numeric" oninput="pinInput(0)" onkeydown="pinKey(event,0)"><input id="p1" class="pin-digit" maxlength="1" inputmode="numeric" oninput="pinInput(1)" onkeydown="pinKey(event,1)"><input id="p2" class="pin-digit" maxlength="1" inputmode="numeric" oninput="pinInput(2)" onkeydown="pinKey(event,2)"><input id="p3" class="pin-digit" maxlength="1" inputmode="numeric" oninput="pinInput(3)" onkeydown="pinKey(event,3)"><input id="p4" class="pin-digit" maxlength="1" inputmode="numeric" oninput="pinInput(4)" onkeydown="pinKey(event,4)"><input id="p5" class="pin-digit" maxlength="1" inputmode="numeric" oninput="pinInput(5)" onkeydown="pinKey(event,5)"></div><button onclick="submitPin()" class="btn btn-primary btn-full shadow-lg shadow-brand/20"><span id="pinBtnText">Masuk Rapat</span><div id="pinSpinner" class="spinner hidden" style="border-top-color:#fff;border-color:rgba(255,255,255,0.3)"></div></button><div id="pinError" class="mt-3 text-center text-red-500 text-xs font-medium hidden"></div></div></div>
 
     <!-- ============ CREATE MODAL ============ -->
-    <div id="createModal" class="hidden fixed inset-0 z-[100] items-end sm:items-center justify-center"><div class="modal-overlay absolute inset-0" onclick="hideCreateModal()"></div><div class="relative bg-white rounded-t-3xl sm:rounded-2xl shadow-2xl w-full max-w-sm p-8 slide-up bottom-sheet max-h-[90vh] overflow-y-auto"><div class="w-12 h-1.5 bg-gray-200 rounded-full mx-auto mb-8 sm:hidden"></div><button onclick="hideCreateModal()" class="absolute top-6 right-6 p-2 text-gray-400 hover:text-gray-600 rounded-xl hover:bg-gray-100 transition-all"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button><div class="text-center mb-8"><div class="w-16 h-16 bg-emerald-50 rounded-2xl flex items-center justify-center mx-auto mb-4"><svg class="w-8 h-8 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg></div><h3 class="text-xl font-bold text-gray-900">Buat Rapat Baru</h3><p class="text-sm text-gray-500 mt-2">Anda akan menjadi notulen</p></div><div class="mb-6 p-4 bg-gray-50 rounded-xl border border-gray-100"><p class="text-xs font-bold text-gray-500 mb-3 uppercase tracking-wider">⚡ Template Cepat</p><div class="grid grid-cols-3 gap-3"><button onclick="applyTemplate('bimbingan')" class="text-[11px] font-medium bg-white border border-gray-200 hover:border-brand hover:text-brand rounded-lg py-2.5 transition-all shadow-sm">Bimbingan Skripsi</button><button onclick="applyTemplate('prodi')" class="text-[11px] font-medium bg-white border border-gray-200 hover:border-brand hover:text-brand rounded-lg py-2.5 transition-all shadow-sm">Rapat Prodi</button><button onclick="applyTemplate('fakultas')" class="text-[11px] font-medium bg-white border border-gray-200 hover:border-brand hover:text-brand rounded-lg py-2.5 transition-all shadow-sm">Rapat Fakultas</button></div></div><div class="space-y-4"><div><label class="block text-xs font-bold text-gray-500 mb-1.5 uppercase tracking-wider">Judul Rapat</label><input id="cTitle" class="input" placeholder="Contoh: Rapat Koordinasi Prodi"></div><div class="grid grid-cols-2 gap-4"><div><label class="block text-xs font-bold text-gray-500 mb-1.5 uppercase tracking-wider">Jenis</label><select id="cType" class="input"><option value="rapat_dosen">Rapat Dosen</option><option value="bimbingan_skripsi">Bimbingan</option><option value="rapat_prodi">Rapat Prodi</option><option value="rapat_fakultas">Rapat Fakultas</option><option value="riset_pengabdian">Riset</option><option value="lainnya">Lainnya</option></select></div><div><label class="block text-xs font-bold text-gray-500 mb-1.5 uppercase tracking-wider">Lokasi</label><input id="cLoc" class="input" placeholder="Gedung B Lt.3"></div></div><div><label class="block text-xs font-bold text-gray-500 mb-1.5 uppercase tracking-wider">Agenda</label><textarea id="cAgenda" rows="3" placeholder="Poin-poin agenda..." class="input resize-none"></textarea></div><button onclick="submitCreate()" class="btn btn-green btn-full shadow-lg shadow-emerald-500/20 mt-2"><span id="cBtnText">Buat & Mulai</span><div id="cSpinner" class="spinner hidden" style="border-top-color:#fff;border-color:rgba(255,255,255,0.3)"></div></button></div></div></div>
+    <div id="createModal" class="hidden fixed inset-0 z-[100] items-end sm:items-center justify-center"><div class="modal-overlay absolute inset-0" onclick="hideCreateModal()"></div><div class="relative bg-white rounded-t-3xl sm:rounded-2xl shadow-2xl w-full max-w-sm p-6 slide-up bottom-sheet max-h-[90vh] overflow-y-auto"><div class="w-10 h-1 bg-gray-200 rounded-full mx-auto mb-5 sm:hidden"></div><button onclick="hideCreateModal()" class="absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-600 rounded-xl hover:bg-gray-100 transition-all"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button><div class="text-center mb-6"><div class="w-12 h-12 bg-emerald-50 rounded-2xl flex items-center justify-center mx-auto mb-3"><svg class="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg></div><h3 class="text-lg font-bold">Buat Rapat Baru</h3><p class="text-sm text-muted mt-1">Anda akan menjadi notulen</p></div><div class="mb-4 p-3 bg-gray-50 rounded-xl border border-gray-100"><p class="text-xs font-bold text-gray-500 mb-2 uppercase tracking-wider">⚡ Template Cepat</p><div class="grid grid-cols-3 gap-2"><button onclick="applyTemplate('bimbingan')" class="text-[11px] bg-white border border-gray-200 hover:border-brand hover:text-brand rounded-lg py-2 transition-all shadow-sm">Bimbingan Skripsi</button><button onclick="applyTemplate('prodi')" class="text-[11px] bg-white border border-gray-200 hover:border-brand hover:text-brand rounded-lg py-2 transition-all shadow-sm">Rapat Prodi</button><button onclick="applyTemplate('fakultas')" class="text-[11px] bg-white border border-gray-200 hover:border-brand hover:text-brand rounded-lg py-2 transition-all shadow-sm">Rapat Fakultas</button></div></div><div class="space-y-3"><div><label class="block text-xs font-bold text-gray-500 mb-1">Judul Rapat</label><input id="cTitle" class="input" placeholder="Contoh: Rapat Koordinasi Prodi"></div><div class="grid grid-cols-2 gap-3"><div><label class="block text-xs font-bold text-gray-500 mb-1">Jenis</label><select id="cType" class="input"><option value="rapat_dosen">Rapat Dosen</option><option value="bimbingan_skripsi">Bimbingan</option><option value="rapat_prodi">Rapat Prodi</option><option value="rapat_fakultas">Rapat Fakultas</option><option value="riset_pengabdian">Riset</option><option value="lainnya">Lainnya</option></select></div><div><label class="block text-xs font-bold text-gray-500 mb-1">Lokasi</label><input id="cLoc" class="input" placeholder="Gedung B Lt.3"></div></div><div><label class="block text-xs font-bold text-gray-500 mb-1">Agenda</label><textarea id="cAgenda" rows="3" placeholder="Poin-poin agenda..." class="input resize-none"></textarea></div><button onclick="submitCreate()" class="btn btn-green btn-full mt-2 shadow-lg shadow-green-500/20"><span id="cBtnText">Buat & Mulai</span><div id="cSpinner" class="spinner hidden" style="border-top-color:#fff;border-color:rgba(255,255,255,0.3)"></div></button></div></div></div>
 
     <!-- ============ ROOM DETAIL MODAL ============ -->
-    <div id="roomDetailModal" class="hidden fixed inset-0 z-[100] items-end sm:items-center justify-center"><div class="modal-overlay absolute inset-0" onclick="hideRoomDetail()"></div><div class="relative bg-white rounded-t-3xl sm:rounded-2xl shadow-2xl w-full max-w-sm p-8 slide-up bottom-sheet"><div class="w-12 h-1.5 bg-gray-200 rounded-full mx-auto mb-8 sm:hidden"></div><div id="rdContent"></div></div></div>
+    <div id="roomDetailModal" class="hidden fixed inset-0 z-[100] items-end sm:items-center justify-center"><div class="modal-overlay absolute inset-0" onclick="hideRoomDetail()"></div><div class="relative bg-white rounded-t-3xl sm:rounded-2xl shadow-2xl w-full max-w-sm p-6 slide-up bottom-sheet"><div class="w-10 h-1 bg-gray-200 rounded-full mx-auto mb-5 sm:hidden"></div><div id="rdContent"></div></div></div>
 
     <!-- ============ EDIT ROOM MODAL ============ -->
-    <div id="editRoomModal" class="hidden fixed inset-0 z-[100] items-center justify-center p-4"><div class="modal-overlay absolute inset-0" onclick="hideEditRoomModal()"></div><div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm p-8 scale-in"><h3 class="text-lg font-bold text-gray-900 mb-6">Edit Info Rapat</h3><div class="space-y-4"><div><label class="block text-xs font-bold text-gray-500 mb-1.5 uppercase tracking-wider">Judul</label><input id="editTitle" class="input"></div><div><label class="block text-xs font-bold text-gray-500 mb-1.5 uppercase tracking-wider">Lokasi</label><input id="editLoc" class="input"></div><div><label class="block text-xs font-bold text-gray-500 mb-1.5 uppercase tracking-wider">Agenda</label><textarea id="editAgenda" rows="3" class="input resize-none"></textarea></div><div class="flex gap-3 mt-6"><button onclick="hideEditRoomModal()" class="flex-1 btn btn-outline btn-sm">Batal</button><button onclick="saveEditRoom()" class="flex-1 btn btn-primary btn-sm shadow-lg shadow-brand/20">Simpan</button></div></div></div></div>
+    <div id="editRoomModal" class="hidden fixed inset-0 z-[100] items-center justify-center p-4"><div class="modal-overlay absolute inset-0" onclick="hideEditRoomModal()"></div><div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 scale-in"><h3 class="text-lg font-bold mb-4">Edit Info Rapat</h3><div class="space-y-3"><div><label class="block text-xs font-bold text-gray-500 mb-1">Judul</label><input id="editTitle" class="input"></div><div><label class="block text-xs font-bold text-gray-500 mb-1">Lokasi</label><input id="editLoc" class="input"></div><div><label class="block text-xs font-bold text-gray-500 mb-1">Agenda</label><textarea id="editAgenda" rows="3" class="input resize-none"></textarea></div><div class="flex gap-2 mt-4"><button onclick="hideEditRoomModal()" class="btn btn-outline flex-1">Batal</button><button onclick="saveEditRoom()" class="btn btn-primary flex-1">Simpan</button></div></div></div></div>
 
     <!-- ============ ROOM VIEW ============ -->
     <div id="roomView" class="view min-h-screen flex-col bg-surface">
         <div class="bg-white/80 backdrop-blur-xl border-b border-gray-100 sticky top-0 z-40">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3">
                 <div class="flex items-center justify-between">
-                    <div class="flex items-center gap-4 min-w-0 flex-1">
+                    <div class="flex items-center gap-3 min-w-0 flex-1">
                         <button onclick="promptLeave()" class="p-2 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-xl transition-all flex-shrink-0"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg></button>
-                        <div class="min-w-0 flex-1"><h2 id="rTitle" class="font-bold text-gray-900 text-lg truncate"></h2><div class="flex items-center gap-2 mt-1"><span class="live-dot"></span><span class="text-xs text-emerald-600 font-bold uppercase tracking-wider">Berlangsung</span><span class="w-px h-3 bg-gray-300 mx-1"></span><span id="rTimer" class="text-xs font-mono font-bold text-brand bg-brand-light px-2 py-0.5 rounded-md">00:00:00</span><span id="rDuration" class="text-xs text-muted ml-1"></span></div></div>
+                        <div class="min-w-0 flex-1"><h2 id="rTitle" class="font-bold text-gray-900 text-lg truncate"></h2><div class="flex items-center gap-2 mt-1"><span class="live-dot"></span><span class="text-xs text-emerald-600 font-bold uppercase tracking-wider">Berlangsung</span><span class="w-px h-3 bg-gray-300 mx-1"></span><span id="rTimer" class="text-xs font-mono font-bold text-brand bg-brand-light px-2 py-0.5">00:00:00</span><span id="rDuration" class="text-xs text-muted ml-1"></span></div></div>
                     </div>
-                    <div class="flex items-center gap-2 flex-shrink-0 ml-4">
-                        <div id="rPinBox" class="hidden"><div class="flex items-center gap-2 bg-amber-50 border border-amber-100 rounded-xl px-4 py-2"><span class="text-xs text-amber-600 font-bold uppercase tracking-wider">PIN</span><span id="rPin" class="font-bold text-amber-800 text-sm tracking-[0.2em]"></span><button onclick="copyPin()" class="p-1 text-amber-500 hover:text-amber-700"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg></button></div></div>
-                        <button id="rEditBtn" onclick="showEditRoomModal()" class="hidden px-4 py-2 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200 transition-all text-xs flex items-center gap-2"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg><span class="hidden sm:inline">Edit</span></button>
-                        <button id="rDeleteBtn" onclick="showDeleteRoomModal()" class="hidden px-4 py-2 bg-red-50 text-red-600 font-bold rounded-xl hover:bg-red-100 transition-all text-xs flex items-center gap-2"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg><span class="hidden sm:inline">Hapus</span></button>
-                        <button id="rEndBtn" onclick="showEndModal()" class="hidden px-4 py-2 bg-red-50 text-red-600 font-bold rounded-xl hover:bg-red-100 transition-all text-xs">Akhiri</button>
+                    <div class="flex items-center gap-2 flex-shrink-0 ml-3">
+                        <div id="rPinBox" class="hidden"><div class="flex items-center gap-2 bg-amber-50 border border-amber-100 px-3 py-1.5"><span class="text-xs text-amber-600 font-bold uppercase">PIN</span><span id="rPin" class="font-bold text-amber-800 text-sm tracking-[0.15em]"></span><button onclick="copyPin()" class="p-1 text-amber-500 hover:text-amber-700"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg></button></div></div>
+                        <button id="rEditBtn" onclick="showEditRoomModal()" class="hidden px-3 py-1.5 bg-gray-100 text-gray-700 font-bold rounded-lg hover:bg-gray-200 text-xs flex items-center gap-1"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg><span class="hidden sm:inline">Edit</span></button>
+                        <button id="rDeleteBtn" onclick="showDeleteRoomModal()" class="hidden px-3 py-1.5 bg-red-50 text-red-600 font-bold rounded-lg hover:bg-red-100 text-xs flex items-center gap-1"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg><span class="hidden sm:inline">Hapus</span></button>
+                        <button id="rEndBtn" onclick="showEndModal()" class="hidden px-3 py-1.5 bg-red-50 text-red-600 font-bold rounded-lg hover:bg-red-100 text-xs">Akhiri</button>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 py-6 grid grid-cols-1 lg:grid-cols-4 gap-6 transition-all" id="roomGrid">
+        <div class="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 py-4 grid grid-cols-1 lg:grid-cols-4 gap-4 transition-all" id="roomGrid">
             <div class="lg:col-span-3 flex flex-col h-full">
                 <div id="notulenMode" class="hidden flex-col h-full">
                     <div class="editor-wrapper">
                         <div class="note-toolbar">
                             <div class="flex items-center gap-1 flex-1 flex-wrap">
+                                <select id="fontSizeSelect" onchange="applyFontSize(this.value)" class="text-xs px-2 py-1 border border-gray-200 rounded cursor-pointer"><option value="">Ukuran</option><option value="1">Kecil</option><option value="2">Normal</option><option value="3">Sedang</option><option value="4">Besar</option><option value="5">Sangat Besar</option></select>
+                                <div class="tool-sep"></div>
                                 <button onclick="fmt('bold')" onmousedown="event.preventDefault()" class="tool-btn font-bold">B</button>
                                 <button onclick="fmt('italic')" onmousedown="event.preventDefault()" class="tool-btn italic">I</button>
                                 <button onclick="fmt('underline')" onmousedown="event.preventDefault()" class="tool-btn underline">U</button>
@@ -347,14 +312,9 @@
                                 <div class="tool-sep"></div>
                                 <button onclick="fmt('formatBlock','<h2>')" onmousedown="event.preventDefault()" class="tool-btn text-xs font-bold">H</button>
                                 <button onclick="fmt('removeFormat')" onmousedown="event.preventDefault()" class="tool-btn text-xs">✕</button>
-                                <div class="relative"><button onclick="togglePalette('textPalette')" onmousedown="event.preventDefault()" class="tool-btn"><div class="w-4 h-4 rounded-full border border-gray-300 overflow-hidden" style="background: linear-gradient(135deg, #ef4444 50%, #3b82f6 50%);"></div></button><div id="textPalette" class="color-popover" style="right:0;"><p class="text-[10px] text-gray-400 font-bold mb-2">Warna Teks</p><div class="color-grid"><div class="color-dot" style="background:#111827" onclick="applyTextColor('#111827')"></div><div class="color-dot" style="background:#EF4444" onclick="applyTextColor('#EF4444')"></div><div class="color-dot" style="background:#3B82F6" onclick="applyTextColor('#3B82F6')"></div><div class="color-dot" style="background:#10B981" onclick="applyTextColor('#10B981')"></div><div class="color-dot" style="background:#F59E0B" onclick="applyTextColor('#F59E0B')"></div><div class="color-dot" style="background:#6B7280" onclick="applyTextColor('#6B7280')"></div></div></div></div>
-                                <div class="relative"><button onclick="togglePalette('highlightPalette')" onmousedown="event.preventDefault()" class="tool-btn"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"></path></svg></button><div id="highlightPalette" class="color-popover" style="right:0;"><p class="text-[10px] text-gray-400 font-bold mb-2">Highlight</p><div class="color-grid"><div class="color-dot" style="background:#fef08a" onclick="applyHighlight('#fef08a')"></div><div class="color-dot" style="background:#bbf7d0" onclick="applyHighlight('#bbf7d0')"></div><div class="color-dot" style="background:#bfdbfe" onclick="applyHighlight('#bfdbfe')"></div><div class="color-dot" style="background:#fecaca" onclick="applyHighlight('#fecaca')"></div><div class="color-dot" style="background:#f3f4f6" onclick="applyHighlight('#f3f4f6')"></div><div class="color-dot border border-gray-200" style="background:#fff" onclick="applyHighlight('transparent')"></div></div></div></div>
                                 <div class="tool-sep"></div>
-                                <button onclick="triggerImageUpload()" class="tool-btn">🖼️</button>
-                                <input type="file" id="editorImageInput" class="hidden" accept="image/*" multiple onchange="handleEditorImageUpload(event)">
-                                <button onclick="embedLink()" class="tool-btn">🔗</button>
-                                <div class="tool-sep"></div>
-                                <button onclick="toggleTransformMode()" id="transformModeBtn" class="tool-btn">🔧</button>
+                                <button onclick="triggerImageUpload()" onmousedown="event.preventDefault()" class="tool-btn" title="Sisipkan Gambar">🖼️</button>
+                                <input type="file" id="editorImageInput" class="hidden" accept="image/*" onchange="handleEditorImageInsert(event)">
                             </div>
                             <div class="flex items-center gap-2 ml-2">
                                 <button onclick="toggleFocusMode()" id="focusModeBtn" class="tool-btn text-xs"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path></svg></button>
@@ -363,40 +323,38 @@
                             </div>
                         </div>
                         <div id="editor" contenteditable="true" data-placeholder="Ketik notulensi di sini..." class="note-editor w-full"></div>
-                        <div class="px-6 py-3 border-t border-gray-100 bg-gray-50/50 flex items-center justify-between text-xs text-gray-400"><span id="charCount">0 karakter</span><span id="wordCount">0 kata</span></div>
+                        <div class="px-4 py-2 border-t bg-gray-50/50 flex items-center justify-between text-[10px] text-gray-400"><span id="charCount">0 karakter</span><span id="wordCount">0 kata</span></div>
                     </div>
                 </div>
                 <div id="viewerMode" class="hidden flex-col h-full">
                     <div class="card overflow-hidden h-full flex flex-col">
-                        <div class="px-6 py-4 border-b border-gray-100 bg-gray-50/50 flex items-center justify-between"><div class="flex items-center gap-3"><svg class="w-5 h-5 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg><span class="text-sm font-bold text-gray-700">Mode Peserta</span></div><div class="flex items-center gap-2"><div class="live-dot"></div><span class="text-xs text-emerald-600 font-bold uppercase tracking-wider">Realtime</span></div></div>
-                        <div class="p-8 flex-1 overflow-y-auto"><div id="viewerNotes" class="note-editor text-sm cursor-default"></div></div>
+                        <div class="px-4 py-3 border-b bg-gray-50/50 flex items-center justify-between"><div class="flex items-center gap-2"><svg class="w-4 h-4 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg><span class="text-sm font-bold">Mode Peserta</span></div><div class="flex items-center gap-1.5"><div class="live-dot"></div><span class="text-xs text-emerald-600 font-bold uppercase">Realtime</span></div></div>
+                        <div class="p-6 flex-1 overflow-y-auto"><div id="viewerNotes" class="note-editor text-sm"></div></div>
                     </div>
                 </div>
             </div>
             <div class="lg:col-span-1 space-y-4 sidebar-col">
-                <div class="card p-5 sticky top-24">
-                    <h3 class="text-xs font-bold text-gray-900 mb-4 flex items-center gap-2">Info Rapat</h3>
-                    <div class="space-y-4 text-sm">
-                        <div class="flex justify-between"><span class="text-muted">Notulen</span><p id="rNotulen" class="font-bold text-gray-900"></p></div>
-                        <div class="flex justify-between"><span class="text-muted">Jenis</span><p id="rType" class="font-bold text-gray-900"></p></div>
-                        <div class="flex justify-between"><span class="text-muted">Lokasi</span><p id="rLoc" class="font-bold text-gray-900"></p></div>
-                        <div class="flex justify-between"><span class="text-muted">Mulai</span><p id="rStart" class="font-bold text-gray-900 text-xs"></p></div>
-                        <div id="rAgendaBlock" class="pt-3 border-t"><span class="text-muted block mb-1">Agenda</span><p id="rAgenda" class="text-xs text-gray-700 bg-gray-50 p-2 rounded"></p></div>
+                <div class="card p-4 sticky top-20">
+                    <h3 class="text-xs font-bold mb-3 flex items-center gap-2">Info Rapat</h3>
+                    <div class="space-y-3 text-sm">
+                        <div class="flex justify-between"><span class="text-muted">Notulen</span><p id="rNotulen" class="font-bold"></p></div>
+                        <div class="flex justify-between"><span class="text-muted">Jenis</span><p id="rType" class="font-bold"></p></div>
+                        <div class="flex justify-between"><span class="text-muted">Lokasi</span><p id="rLoc" class="font-bold"></p></div>
+                        <div class="flex justify-between"><span class="text-muted">Mulai</span><p id="rStart" class="font-bold text-xs"></p></div>
+                        <div id="rAgendaBlock" class="pt-2 border-t"><span class="text-muted block mb-1">Agenda</span><p id="rAgenda" class="text-xs text-gray-700 bg-gray-50 p-2 rounded"></p></div>
                     </div>
-                    <button onclick="copyRoomInfo()" class="btn btn-outline btn-full btn-sm mt-4">Salin Info</button>
+                    <button onclick="copyRoomInfo()" class="btn btn-outline btn-full btn-sm mt-3">Salin Info</button>
                 </div>
-                <div class="card p-5">
-                    <h3 class="text-xs font-bold text-gray-900 mb-3">Peserta (<span id="rPCount">0</span>)</h3>
+                <div class="card p-4">
+                    <h3 class="text-xs font-bold mb-2">Peserta (<span id="rPCount">0</span>)</h3>
                     <div id="rPList" class="space-y-2 max-h-40"></div>
                 </div>
-                <div class="card p-5">
-                    <div class="flex items-center justify-between mb-3">
-                        <h3 class="text-xs font-bold text-gray-900">Lampiran</h3>
+                <div class="card p-4">
+                    <div class="flex items-center justify-between mb-2">
+                        <h3 class="text-xs font-bold">Lampiran</h3>
                         <label class="btn btn-outline btn-xs cursor-pointer"><span>+ Tambah</span><input type="file" id="attachmentInput" class="hidden" multiple onchange="handleAttachmentUpload(event)"></label>
                     </div>
-                    <div id="attachmentList" class="space-y-2 max-h-32 overflow-y-auto">
-                        <p class="text-xs text-muted text-center py-2">Belum ada lampiran</p>
-                    </div>
+                    <div id="attachmentList" class="space-y-2 max-h-32 overflow-y-auto"><p class="text-xs text-muted text-center py-2">Belum ada lampiran</p></div>
                 </div>
             </div>
         </div>
@@ -442,8 +400,14 @@
         let currentCalendarDate = new Date();
         let selectedCalendarDate = null;
         let isFocusMode = false;
-        let isTransformMode = false, activeTransformImg = null, isDragging = false, isResizing = false;
-        let startX, startY, startLeft, startTop, startWidth;
+
+        // Image manipulation state
+        let selectedImageWrapper = null;
+        let isDraggingImage = false;
+        let isResizingImage = false;
+        let resizeDirection = '';
+        let dragStartX = 0, dragStartY = 0;
+        let imgStartWidth = 0, imgStartHeight = 0;
 
         const templates = {
             'bimbingan': { type:'bimbingan_skripsi', title:'Bimbingan Skripsi', agenda:'1. Tinjauan Bab Pendahuluan\n2. Evaluasi Metodologi\n3. Revisi Data & Analisis\n4. Jadwal Bimbingan Lanjutan' },
@@ -474,27 +438,231 @@
             if(dur) dur.textContent=Math.floor(d/3600)>0?`${Math.floor(d/3600)}j ${Math.floor((d%3600)/60)}m`:`${Math.floor((d%3600)/60)}m`;
         }
         function fmt(cmd, value=null) { document.execCommand(cmd, false, value); document.getElementById('editor').focus(); }
-        function togglePalette(id) {
-            document.querySelectorAll('.color-popover').forEach(p => { if(p.id !== id) p.classList.remove('active'); });
-            const el = document.getElementById(id); if(el) el.classList.toggle('active');
-        }
-        function applyTextColor(hex) { document.execCommand('foreColor', false, hex); togglePalette('textPalette'); document.getElementById('editor').focus(); }
-        function applyHighlight(hex) {
-            if(hex==='transparent') document.execCommand('removeFormat', false, null);
-            else document.execCommand('hiliteColor', false, hex);
-            togglePalette('highlightPalette'); document.getElementById('editor').focus();
-        }
-        document.addEventListener('click', e => {
-            document.querySelectorAll('.color-popover').forEach(p => {
-                if (!p.contains(e.target) && !p.previousElementSibling?.contains(e.target)) p.classList.remove('active');
+        function applyFontSize(val) { 
+            if(!val) return; 
+            document.execCommand('fontSize', false, val); 
+            // Convert font size to pt-like styling
+            const sizes = document.getElementById('editor').querySelectorAll('font[size]');
+            sizes.forEach(f => {
+                const sizeMap = {'1':'12px','2':'15px','3':'18px','4':'24px','5':'32px'};
+                f.style.fontSize = sizeMap[f.getAttribute('size')] || '15px';
+                f.removeAttribute('size');
             });
-        });
+            document.getElementById('editor').focus(); 
+        }
+        
+        // Image Insert Function (Microsoft Office Style)
+        function triggerImageUpload() { 
+            document.getElementById('editorImageInput').click(); 
+        }
+        
+        async function handleEditorImageInsert(event) {
+            const files = Array.from(event.target.files);
+            if(!files.length || !currentRoomId) return;
+            
+            const editor = document.getElementById('editor');
+            editor.focus();
+            
+            for(const file of files){
+                if(!file.type.startsWith('image/')) continue;
+                try{
+                    // Save to Supabase
+                    const path = `attachments/${currentRoomId}/images/${Date.now()}_${file.name}`;
+                    const { error: uploadError } = await supabaseClient.storage.from('meeting-docs').upload(path, file);
+                    if(uploadError) throw uploadError;
+                    
+                    const {  urlData, error: urlError } = supabaseClient.storage.from('meeting-docs').getPublicUrl(path);
+                    if(urlError) throw urlError;
+                    
+                    const fileUrl = urlData.publicUrl;
+                    
+                    // Save metadata to Firestore
+                    await db.collection('attachments').add({
+                        roomId: currentRoomId, type: 'image',
+                        fileUrl: fileUrl, fileName: file.name,
+                        uploadedBy: currentUser.uid, uploadedByName: window.userData?.name || 'User',
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                    
+                    // Insert image at cursor position
+                    const imgHtml = `<span class="img-wrapper"><img src="${fileUrl}?t=${Date.now()}" alt="${file.name}" style="max-width:100%;height:auto;border-radius:4px;cursor:pointer;"></span><br>`;
+                    document.execCommand('insertHTML', false, imgHtml);
+                    
+                    // Save changes
+                    lastSavedContent = editor.innerHTML;
+                    await db.collection('rooms').doc(currentRoomId).update({notes:editor.innerHTML});
+                    
+                    toast('Gambar disisipkan','success');
+                }catch(e){ console.error('Image upload error:', e); toast('Gagal upload: ' + e.message, 'error'); }
+            }
+            event.target.value='';
+        }
+        
+        // Initialize image manipulation on editor
+        function initImageManipulation() {
+            const editor = document.getElementById('editor');
+            if(!editor) return;
+            
+            // Click to select image
+            editor.addEventListener('click', (e) => {
+                const wrapper = e.target.closest('.img-wrapper');
+                if(wrapper) {
+                    e.stopPropagation();
+                    selectImageWrapper(wrapper);
+                } else {
+                    deselectImageWrapper();
+                }
+            });
+            
+            // Click outside to deselect
+            document.addEventListener('click', (e) => {
+                if(selectedImageWrapper && !editor.contains(e.target)) {
+                    deselectImageWrapper();
+                }
+            });
+            
+            // Drag and resize
+            editor.addEventListener('mousedown', (e) => {
+                if(!selectedImageWrapper) return;
+                
+                const handle = e.target.closest('.resize-handle');
+                if(handle) {
+                    e.preventDefault();
+                    isResizingImage = true;
+                    resizeDirection = handle.dataset.direction;
+                    const img = selectedImageWrapper.querySelector('img');
+                    imgStartWidth = img.offsetWidth;
+                    imgStartHeight = img.offsetHeight;
+                    dragStartX = e.clientX;
+                    dragStartY = e.clientY;
+                    return;
+                }
+                
+                if(e.target.closest('.img-wrapper img')) {
+                    e.preventDefault();
+                    isDraggingImage = true;
+                    const wrapper = e.target.closest('.img-wrapper');
+                    dragStartX = e.clientX - (wrapper.offsetLeft || 0);
+                    dragStartY = e.clientY - (wrapper.offsetTop || 0);
+                }
+            });
+            
+            document.addEventListener('mousemove', (e) => {
+                if(isResizingImage && selectedImageWrapper) {
+                    const img = selectedImageWrapper.querySelector('img');
+                    const dx = e.clientX - dragStartX;
+                    const dy = e.clientY - dragStartY;
+                    
+                    if(resizeDirection.includes('e')) {
+                        img.style.width = Math.max(50, imgStartWidth + dx) + 'px';
+                    }
+                    if(resizeDirection.includes('w')) {
+                        img.style.width = Math.max(50, imgStartWidth - dx) + 'px';
+                    }
+                    if(resizeDirection.includes('s')) {
+                        img.style.height = Math.max(50, imgStartHeight + dy) + 'px';
+                    }
+                    if(resizeDirection.includes('n')) {
+                        img.style.height = Math.max(50, imgStartHeight - dy) + 'px';
+                    }
+                    // Keep aspect ratio for corner resizing
+                    if(resizeDirection === 'se' || resizeDirection === 'nw') {
+                        const ratio = imgStartHeight / imgStartWidth;
+                        const newWidth = Math.max(50, imgStartWidth + dx);
+                        img.style.width = newWidth + 'px';
+                        img.style.height = (newWidth * ratio) + 'px';
+                    }
+                    if(resizeDirection === 'ne' || resizeDirection === 'sw') {
+                        const ratio = imgStartHeight / imgStartWidth;
+                        const newWidth = Math.max(50, imgStartWidth - dx);
+                        img.style.width = newWidth + 'px';
+                        img.style.height = (newWidth * ratio) + 'px';
+                    }
+                    return;
+                }
+                
+                if(isDraggingImage && selectedImageWrapper) {
+                    e.preventDefault();
+                    const wrapper = selectedImageWrapper;
+                    wrapper.style.position = 'relative';
+                    wrapper.style.left = (e.clientX - dragStartX) + 'px';
+                    wrapper.style.top = (e.clientY - dragStartY) + 'px';
+                }
+            });
+            
+            document.addEventListener('mouseup', () => {
+                if(isResizingImage || isDraggingImage) {
+                    isResizingImage = false;
+                    isDraggingImage = false;
+                    // Save after manipulation
+                    if(selectedImageWrapper) {
+                        lastSavedContent = editor.innerHTML;
+                        debouncedSave();
+                    }
+                }
+            });
+            
+            // Delete selected image with Delete/Backspace key
+            editor.addEventListener('keydown', (e) => {
+                if(selectedImageWrapper && (e.key === 'Delete' || e.key === 'Backspace')) {
+                    e.preventDefault();
+                    const wrapper = selectedImageWrapper;
+                    const parent = wrapper.parentNode;
+                    wrapper.remove();
+                    deselectImageWrapper();
+                    // Place cursor after deleted image
+                    if(parent) {
+                        const range = document.createRange();
+                        range.setStartAfter(parent);
+                        range.collapse(true);
+                        const sel = window.getSelection();
+                        sel.removeAllRanges();
+                        sel.addRange(range);
+                    }
+                    lastSavedContent = editor.innerHTML;
+                    debouncedSave();
+                }
+            });
+        }
+        
+        function selectImageWrapper(wrapper) {
+            // Deselect previous
+            if(selectedImageWrapper) {
+                selectedImageWrapper.classList.remove('selected');
+                const oldHandles = selectedImageWrapper.querySelectorAll('.resize-handle');
+                oldHandles.forEach(h => h.remove());
+            }
+            
+            selectedImageWrapper = wrapper;
+            wrapper.classList.add('selected');
+            
+            // Add resize handles
+            const directions = ['nw','n','ne','w','e','sw','s','se'];
+            directions.forEach(dir => {
+                const handle = document.createElement('div');
+                handle.className = `resize-handle ${dir}`;
+                handle.dataset.direction = dir;
+                wrapper.appendChild(handle);
+            });
+        }
+        
+        function deselectImageWrapper() {
+            if(selectedImageWrapper) {
+                selectedImageWrapper.classList.remove('selected');
+                const handles = selectedImageWrapper.querySelectorAll('.resize-handle');
+                handles.forEach(h => h.remove());
+                selectedImageWrapper = null;
+            }
+        }
+        
         function toggleFocusMode() {
             isFocusMode = !isFocusMode;
             document.body.classList.toggle('focus-mode', isFocusMode);
-            document.getElementById('focusModeBtn').classList.toggle('active', isFocusMode);
+            const btn = document.getElementById('focusModeBtn');
+            if(btn) btn.classList.toggle('active', isFocusMode);
             toast(isFocusMode?'Mode Fokus Aktif':'Mode Fokus Nonaktif','info');
         }
+
         function updateCounts(){
             const editor=document.getElementById('editor');
             const text=editor.innerText||'';
@@ -514,111 +682,21 @@
                 }catch(e){document.getElementById('saveInd').innerHTML='<span class="w-1.5 h-1.5 bg-red-500 rounded-full"></span> Gagal';}
             },800);
         }
-        function insertHtmlAtCursor(html) {
-            const editor = document.getElementById('editor'); editor.focus();
-            const sel = window.getSelection();
-            if (sel.rangeCount) {
-                const range = sel.getRangeAt(0); range.deleteContents();
-                const frag = document.createRange().createContextualFragment(html);
-                range.insertNode(frag); range.setStartAfter(frag.lastChild || frag); range.collapse(true);
-                sel.removeAllRanges(); sel.addRange(range);
-            } else { editor.innerHTML += html; }
-            debouncedSave();
-        }
-        function triggerImageUpload() { document.getElementById('editorImageInput').click(); }
-        async function handleEditorImageUpload(event) {
-            const files = Array.from(event.target.files);
-            if(!files.length || !currentRoomId) return;
-            toast('Mengupload gambar...','info');
-            const uploadedUrls = [];
-            for(const file of files){
-                if(!file.type.startsWith('image/')) continue;
-                try{
-                    const path = `attachments/${currentRoomId}/images/${Date.now()}_${file.name}`;
-                    const { data: uploadData, error: uploadError } = await supabaseClient.storage.from('meeting-docs').upload(path, file);
-                    if(uploadError) throw uploadError;
-                    const { data: urlData, error: urlError } = supabaseClient.storage.from('meeting-docs').getPublicUrl(path);
-                    if(urlError) throw urlError;
-                    if(urlData && urlData.publicUrl) uploadedUrls.push(urlData.publicUrl);
-                }catch(e){console.error('Image upload error:', e);}
-            }
-            if(uploadedUrls.length){
-                uploadedUrls.forEach(url => insertHtmlAtCursor(`<img src="${url}?t=${Date.now()}" style="max-width:100%;height:auto;border-radius:8px;margin:8px 0;display:block;"><br>`));
-                toast(`${uploadedUrls.length} gambar ditambahkan`,'success');
-            }
-            event.target.value='';
-        }
-        function embedLink() {
-            const url = prompt("Masukkan URL link:");
-            if(url && (url.startsWith('http') || url.startsWith('www'))){
-                const finalUrl = url.startsWith('www') ? `https://${url}` : url;
-                insertHtmlAtCursor(`<a href="${finalUrl}" target="_blank" style="color:#2563eb;text-decoration:underline;font-weight:500;">${finalUrl}</a>&nbsp;`);
-            }
-        }
-        function toggleTransformMode() {
-            isTransformMode = !isTransformMode;
-            const editor = document.getElementById('editor');
-            const btn = document.getElementById('transformModeBtn');
-            if(isTransformMode) {
-                editor.classList.add('transform-active');
-                btn.classList.add('active');
-                toast('Mode Transform Aktif (Drag/Resize)','info');
-            } else {
-                editor.classList.remove('transform-active');
-                btn.classList.remove('active');
-                const imgs = editor.querySelectorAll('img');
-                imgs.forEach(img => { img.style.position = ''; img.style.transform = ''; img.style.width = ''; img.style.cursor = ''; });
-                toast('Mode Transform Nonaktif','info');
-            }
-        }
-        document.addEventListener('DOMContentLoaded', () => {
-            const editor = document.getElementById('editor');
-            if(!editor) return;
-            editor.addEventListener('mousedown', (e) => {
-                if(!isTransformMode) return;
-                const target = e.target;
-                if(target.tagName === 'IMG') {
-                    e.preventDefault(); e.stopPropagation();
-                    activeTransformImg = target;
-                    const rect = target.getBoundingClientRect();
-                    const isCorner = (e.clientX > rect.right - 15 && e.clientY > rect.bottom - 15);
-                    if(isCorner) {
-                        isResizing = true; startX = e.clientX; startWidth = target.offsetWidth;
-                    } else {
-                        isDragging = true; startX = e.clientX; startY = e.clientY;
-                        const style = window.getComputedStyle(target);
-                        const matrix = new DOMMatrix(style.transform);
-                        startLeft = matrix.m41; startTop = matrix.m42;
-                    }
-                }
-            });
-            window.addEventListener('mousemove', (e) => {
-                if(!activeTransformImg) return;
-                if(isResizing) {
-                    const dx = e.clientX - startX;
-                    activeTransformImg.style.width = (startWidth + dx) + 'px';
-                    activeTransformImg.style.height = 'auto';
-                } else if(isDragging) {
-                    const dx = e.clientX - startX, dy = e.clientY - startY;
-                    activeTransformImg.style.position = 'relative';
-                    activeTransformImg.style.transform = `translate(${startLeft + dx}px, ${startTop + dy}px)`;
-                }
-            });
-            window.addEventListener('mouseup', () => { isDragging = false; isResizing = false; activeTransformImg = null; });
-        });
+        
         function openImagePreview(url, caption='') {
             const modal = document.getElementById('imagePreviewModal');
             const img = document.getElementById('previewImage');
             const cap = document.getElementById('previewCaption');
             img.src = url; cap.textContent = caption;
-            modal.classList.add('active'); document.body.style.overflow = 'hidden';
+            modal.style.display = 'flex'; document.body.style.overflow = 'hidden';
         }
         function closeImagePreview(event) {
             if(event && event.target !== event.currentTarget) return;
             const modal = document.getElementById('imagePreviewModal');
-            modal.classList.remove('active'); document.body.style.overflow = '';
+            modal.style.display = 'none'; document.body.style.overflow = '';
         }
-        // FIXED: Proper attachment handling with null checks
+        
+        // Attachment upload
         async function handleAttachmentUpload(event) {
             const files = Array.from(event.target.files);
             if(!files.length || !currentRoomId) return;
@@ -632,7 +710,7 @@
                     const { error: uploadError } = await supabaseClient.storage.from('meeting-docs').upload(path, file);
                     if(uploadError) throw uploadError;
                     
-                    const { data: urlData, error: urlError } = supabaseClient.storage.from('meeting-docs').getPublicUrl(path);
+                    const {  urlData, error: urlError } = supabaseClient.storage.from('meeting-docs').getPublicUrl(path);
                     if(urlError) throw urlError;
                     
                     const fileUrl = urlData.publicUrl;
@@ -996,7 +1074,6 @@
                 await batch.commit();toast('Rapat dihapus!','success');hideDeleteRoomModal();currentRoomId=null;isNotulen=false;hasUnsaved=false;if(timerInterval)clearInterval(timerInterval);if(unsubRoom)unsubRoom();if(unsubAtt)unsubAtt();showView('dashboardView');loadDashboard();
             }catch(e){toast(e.message,'error');}
         }
-        // FIXED: Comprehensive null checks for all elements
         async function enterRoom(rid){
             currentRoomId=rid;hasUnsaved=false;
             const editor = document.getElementById('editor');
@@ -1033,7 +1110,6 @@
             if(focusBtn) focusBtn.classList.remove('active');
             
             const editBtn = document.getElementById('rEditBtn');
-            const docBox = document.getElementById('rDocBox');
             const pinBox = document.getElementById('rPinBox');
             const rPin = document.getElementById('rPin');
             const endBtn = document.getElementById('rEndBtn');
@@ -1043,7 +1119,6 @@
             const viewerNotes = document.getElementById('viewerNotes');
             
             if(editBtn) editBtn.classList.toggle('hidden',!isNotulen);
-            if(docBox) docBox.classList.toggle('hidden',!isNotulen);
             
             if(isNotulen){
                 if(pinBox) pinBox.classList.remove('hidden');
@@ -1057,6 +1132,8 @@
                 updateCounts();
                 editor.oninput=()=>{updateCounts();markUnsaved();debouncedSave();};
                 loadAttachments();
+                // Initialize image manipulation
+                initImageManipulation();
             }else{
                 if(pinBox) pinBox.classList.add('hidden');
                 if(endBtn) endBtn.classList.add('hidden');
@@ -1145,21 +1222,3 @@
     </script>
 </body>
 </html>
-
-
-
-              <script>
-                              rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    match /{document=**} {
-      allow read, write: if request.auth != null;
-    }
-  }
-}
-
-
-              </script>
-                        </body>
-                        </html>
-                    
