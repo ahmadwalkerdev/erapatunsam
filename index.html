@@ -135,7 +135,7 @@
         const googleProvider = new firebase.auth.GoogleAuthProvider();
 
         // Dekonstruksi hooks dari global React
-        const { useState, useEffect, useRef } = React;
+        const { useState, useEffect, useRef, useMemo, useCallback } = React;
 
         // Mock Lucide Icons (Komponen SVG mandiri)
         const IconWrapper = ({ children, size = 24, strokeWidth = 2, className = "" }) => (
@@ -598,15 +598,18 @@
             return Object.entries(months).sort((a, b) => b[0].localeCompare(a[0]));
           };
 
-          const monthlyData = getMonthlyRevenue();
+          const monthlyData = useMemo(() => getMonthlyRevenue(), [orders]);
           const currentMonthKey = new Date().toISOString().slice(0, 7);
-          const currentMonthData = monthlyData.find(m => m[0] === currentMonthKey)?.[1] || { usd: 0, idr: 0, count: 0 };
+          const currentMonthData = useMemo(() => 
+            monthlyData.find(m => m[0] === currentMonthKey)?.[1] || { usd: 0, idr: 0, count: 0 },
+            [monthlyData, currentMonthKey]
+          );
 
           /* ═══════════════════════════════════════════════════════════
              ADVANCED ANALYTICS
              ═══════════════════════════════════════════════════════════ */
           
-          const getTopClients = (limit = 5) => {
+          const getTopClients = useCallback((limit = 5) => {
             const clientMap = {};
             orders.forEach(order => {
               const totalItemsPrice = order.items.reduce((sum, b) => sum + (Number(b.price) || 0), 0);
@@ -631,9 +634,9 @@
               clientMap[order.client].count += 1;
             });
             return Object.values(clientMap).sort((a, b) => b.totalUSD - a.totalUSD).slice(0, limit);
-          };
+          }, [orders]);
 
-          const getPaymentStatusBreakdown = () => {
+          const getPaymentStatusBreakdown = useCallback(() => {
             let lunas = 0, dpOnly = 0, pending = 0;
             orders.forEach(order => {
               if (order.isPaidFull) lunas++;
@@ -646,9 +649,9 @@
               }
             });
             return { lunas, dpOnly, pending, total: orders.length };
-          };
+          }, [orders]);
 
-          const getAvgCompletionDays = () => {
+          const getAvgCompletionDays = useCallback(() => {
             const completedWithDates = orders.filter(o => o.status === 'Completed' && o.completedAt && o.dealDate);
             if (completedWithDates.length === 0) return null;
             const totalDays = completedWithDates.reduce((sum, o) => {
@@ -658,9 +661,9 @@
               return sum + days;
             }, 0);
             return Math.round(totalDays / completedWithDates.length);
-          };
+          }, [orders]);
 
-          const getReceivablesTotal = () => {
+          const getReceivablesTotal = useCallback(() => {
             let receivableUSD = 0, receivableIDR = 0;
             orders.forEach(order => {
               if (order.isPaidFull) return;
@@ -673,20 +676,20 @@
               else receivableIDR += unpaid;
             });
             return { receivableUSD, receivableIDR };
-          };
+          }, [orders]);
 
-          const topClients = getTopClients(5);
-          const paymentBreakdown = getPaymentStatusBreakdown();
-          const avgCompletionDays = getAvgCompletionDays();
-          const receivables = getReceivablesTotal();
+          const topClients = useMemo(() => getTopClients(5), [getTopClients]);
+          const paymentBreakdown = useMemo(() => getPaymentStatusBreakdown(), [getPaymentStatusBreakdown]);
+          const avgCompletionDays = useMemo(() => getAvgCompletionDays(), [getAvgCompletionDays]);
+          const receivables = useMemo(() => getReceivablesTotal(), [getReceivablesTotal]);
 
-          const earnings = calculateTotalEarnings(orders);
-          const stats = {
+          const earnings = useMemo(() => calculateTotalEarnings(orders), [orders]);
+          const stats = useMemo(() => ({
             totalOrders: orders.length,
             active: orders.filter(o => o.status === 'In Progress').length,
             revenueUSD: earnings.totalUSD,
             revenueIDR: earnings.totalIDR,
-          };
+          }), [orders, earnings]);
 
           /* ═══════════════════════════════════════════════════════════
              MINI SPARKLINE COMPONENT
